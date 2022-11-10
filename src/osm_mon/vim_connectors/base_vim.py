@@ -24,3 +24,6 @@ class VIMConnector:
     # def collect_servers_status(self) -> List[Metric]:
     def collect_servers_status(self) -> List:
         pass
+
+    def is_vim_ok(self) -> bool:
+        pass

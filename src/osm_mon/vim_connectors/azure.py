@@ -181,3 +181,13 @@ class AzureCollector(VIMConnector):
         except Exception as e:
             log.error(e)
         return servers
+
+    def is_vim_ok(self) -> bool:
+        status = False
+        self.reload_client = True
+        try:
+            self._reload_connection()
+            status = True
+        except Exception as e:
+            log.error(e)
+        return status

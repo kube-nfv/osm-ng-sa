@@ -90,3 +90,14 @@ class GcpCollector(VIMConnector):
         except Exception as e:
             log.error(e)
         return servers
+
+    def is_vim_ok(self) -> bool:
+        status = False
+        try:
+            self.conn_compute.zones().get(
+                project=self.project, zone=self.zone
+            ).execute()
+            status = True
+        except Exception as e:
+            log.error(e)
+        return status

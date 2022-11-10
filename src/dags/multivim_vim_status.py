@@ -28,9 +28,9 @@ from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 
 SUPPORTED_VIM_TYPES = ["openstack", "vio", "gcp", "azure"]
 PROMETHEUS_PUSHGW = "pushgateway-prometheus-pushgateway:9091"
-PROMETHEUS_JOB_PREFIX = "airflow_osm_vm_status_"
-PROMETHEUS_METRIC = "vm_status"
-PROMETHEUS_METRIC_DESCRIPTION = "VM Status from VIM"
+PROMETHEUS_JOB_PREFIX = "airflow_osm_vim_status_"
+PROMETHEUS_METRIC = "vim_status"
+PROMETHEUS_METRIC_DESCRIPTION = "VIM status"
 SCHEDULE_INTERVAL = 1
 
 
@@ -90,20 +90,9 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
             print(f"VIM type '{vim_type}' not supported")
             return None
 
-        def get_all_vm_status(vim_account):
-            """Get VM status from the VIM"""
-            collector = get_vim_collector(vim_account)
-            if collector:
-                status = collector.is_vim_ok()
-                print(f"VIM status: {status}")
-                vm_status_list = collector.collect_servers_status()
-                return vm_status_list
-            else:
-                return None
-
-        @task(task_id="get_all_vm_status_and_send_to_prometheus")
-        def get_all_vm_status_and_send_to_prometheus(vim_id: str):
-            """Authenticate against VIM, collect servers status and send to prometheus"""
+        @task(task_id="get_vim_status_and_send_to_prometheus")
+        def get_vim_status_and_send_to_prometheus(vim_id: str):
+            """Authenticate against VIM and check status"""
 
             # Get VIM account info from MongoDB
             print(f"Reading VIM info, id: {vim_id}")
@@ -118,31 +107,29 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                 PROMETHEUS_METRIC,
                 PROMETHEUS_METRIC_DESCRIPTION,
                 labelnames=[
-                    "vm_id",
                     "vim_id",
                 ],
                 registry=registry,
             )
+            metric.labels(vim_id).set(0)
 
-            # Get status of all VM from VIM
-            all_vm_status = get_all_vm_status(vim_account)
-            print(f"Got {len(all_vm_status)} VMs with their status:")
-            if all_vm_status:
-                for vm in all_vm_status:
-                    vm_id = vm["id"]
-                    vm_status = vm["status"]
-                    vm_name = vm.get("name", "")
-                    print(f"    {vm_name} ({vm_id}) {vm_status}")
-                    metric.labels(vm_id, vim_id).set(vm_status)
-                # Push to Prometheus only if there are VM
-                push_to_gateway(
-                    gateway=PROMETHEUS_PUSHGW,
-                    job=f"{PROMETHEUS_JOB_PREFIX}{vim_id}",
-                    registry=registry,
-                )
+            # Get status of VIM
+            collector = get_vim_collector(vim_account)
+            if collector:
+                status = collector.is_vim_ok()
+                print(f"VIM status: {status}")
+                metric.labels(vim_id).set(1)
+            else:
+                print("Error creating VIM collector")
+            # Push to Prometheus
+            push_to_gateway(
+                gateway=PROMETHEUS_PUSHGW,
+                job=f"{PROMETHEUS_JOB_PREFIX}{vim_id}",
+                registry=registry,
+            )
             return
 
-        get_all_vm_status_and_send_to_prometheus(vim_id)
+        get_vim_status_and_send_to_prometheus(vim_id)
 
     return dag
 
@@ -153,8 +140,8 @@ for index, vim in enumerate(vim_list):
     if vim_type in SUPPORTED_VIM_TYPES:
         vim_id = vim["_id"]
         vim_name = vim["name"]
-        dag_description = f"Dag for vim {vim_name}"
-        dag_id = f"vm_status_vim_{vim_id}"
+        dag_description = f"Dag for VIM {vim_name} status"
+        dag_id = f"vim_status_{vim_id}"
         print(f"Creating DAG {dag_id}")
         globals()[dag_id] = create_dag(
             dag_id=dag_id,
@@ -163,4 +150,4 @@ for index, vim in enumerate(vim_list):
             vim_id=vim_id,
         )
     else:
-        print(f"VIM type '{vim_type}' not supported for collecting VM status")
+        print(f"VIM type '{vim_type}' not supported for monitoring VIM status")

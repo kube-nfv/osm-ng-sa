@@ -81,3 +81,11 @@ class OpenStackCollector(VIMConnector):
             }
             servers.append(vm)
         return servers
+
+    def is_vim_ok(self) -> bool:
+        try:
+            self.nova.servers.list()
+            return True
+        except Exception as e:
+            log.warning("VIM status is not OK: %s" % e)
+            return False
