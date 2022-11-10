@@ -1,5 +1,4 @@
-#!/bin/sh
-#
+#######################################################################################
 # Copyright ETSI Contributors and Others.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +13,14 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+#######################################################################################
+from typing import Dict, List
 
-echo "Launching tox"
-TOX_PARALLEL_NO_SPINNER=1 tox --parallel=auto
 
+class VIMConnector:
+    def __init__(self, vim_account: Dict):
+        pass
+
+    # def collect_servers_status(self) -> List[Metric]:
+    def collect_servers_status(self) -> List:
+        pass

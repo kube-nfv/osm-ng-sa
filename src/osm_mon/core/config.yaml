@@ -1,5 +1,4 @@
-#!/bin/sh
-#
+#######################################################################################
 # Copyright ETSI Contributors and Others.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +13,15 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+#######################################################################################
 
-echo "Launching tox"
-TOX_PARALLEL_NO_SPINNER=1 tox --parallel=auto
+global:
+  loglevel: INFO
+  request_timeout: 10
+
+database:
+  driver: mongo
+  uri: mongodb://mongodb-k8s:27017/?replicaSet=rs0
+  name: osm
+  commonkey: gj7LmbCexbmII7memwbGRRdfbYuT3nvy
 

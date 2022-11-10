@@ -41,6 +41,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
         python3-dev \
         python3-setuptools
 
-RUN python3 -m easy_install pip==21.3.1
+RUN python3 -m easy_install pip==22.3
 RUN pip install tox==3.24.5
 

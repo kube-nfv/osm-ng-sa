@@ -1,5 +1,4 @@
-#!/bin/sh
-#
+#######################################################################################
 # Copyright ETSI Contributors and Others.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +13,8 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+#######################################################################################
 
-echo "Launching tox"
-TOX_PARALLEL_NO_SPINNER=1 tox --parallel=auto
-
+git+https://osm.etsi.org/gerrit/osm/common.git@master#egg=osm-common
+-r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+apache-airflow==2.4.*

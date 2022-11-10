@@ -1,5 +1,4 @@
-#!/bin/sh
-#
+#######################################################################################
 # Copyright ETSI Contributors and Others.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +13,10 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-
-echo "Launching tox"
-TOX_PARALLEL_NO_SPINNER=1 tox --parallel=auto
-
+#######################################################################################
+coverage==6.5.0
+    # via -r requirements-test.in
+mock==4.0.3
+    # via -r requirements-test.in
+nose2==0.12.0
+    # via -r requirements-test.in
