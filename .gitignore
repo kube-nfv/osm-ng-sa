@@ -36,3 +36,4 @@ dist
 *.local
 local
 
+src/osm_ngsa/_version.py

@@ -1,5 +1,3 @@
-#!/bin/sh
-#
 # Copyright ETSI Contributors and Others.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-rm -rf dist deb_dist osm*.tar.gz *.egg-info .eggs
-
-tox -e dist
+stdeb
+setuptools-scm
+setuptools<60
