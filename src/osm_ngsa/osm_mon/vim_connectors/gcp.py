@@ -82,7 +82,7 @@ class GcpCollector(VIMConnector):
                 log.info(response["items"])
                 for server in response["items"]:
                     vm = {
-                        "id": server["id"],
+                        "id": server["name"],
                         "name": server["name"],
                         "status": (1 if (server["status"] == "RUNNING") else 0),
                     }
