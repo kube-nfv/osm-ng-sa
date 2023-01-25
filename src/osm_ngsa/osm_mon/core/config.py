@@ -36,7 +36,7 @@ class Config:
             path = "config.yaml"
             config_file = pkg_resources.resource_filename(__name__, path)
         with open(config_file) as f:
-            self.conf = yaml.load(f)
+            self.conf = yaml.safe_load(f)
 
     def get(self, section, field=None):
         if not field:
