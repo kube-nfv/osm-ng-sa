@@ -18,28 +18,28 @@ azure-common==1.1.28
     # via
     #   -r requirements.in
     #   azure-mgmt-compute
-azure-core==1.26.1
+azure-core==1.26.2
     # via
     #   azure-identity
     #   azure-mgmt-core
     #   msrest
 azure-identity==1.12.0
     # via -r requirements.in
-azure-mgmt-compute==29.0.0
+azure-mgmt-compute==29.1.0
     # via -r requirements.in
 azure-mgmt-core==1.3.2
     # via azure-mgmt-compute
-cachetools==5.2.0
+cachetools==5.3.0
     # via google-auth
-certifi==2022.9.24
+certifi==2022.12.7
     # via
     #   msrest
     #   requests
 cffi==1.15.1
     # via cryptography
-charset-normalizer==2.1.1
+charset-normalizer==3.0.1
     # via requests
-cryptography==38.0.3
+cryptography==39.0.0
     # via
     #   azure-identity
     #   msal
@@ -49,11 +49,11 @@ debtcollector==2.5.0
     #   oslo-config
     #   oslo-utils
     #   python-keystoneclient
-google-api-core==2.10.2
+google-api-core==2.11.0
     # via google-api-python-client
-google-api-python-client==2.66.0
+google-api-python-client==2.74.0
     # via -r requirements.in
-google-auth==2.14.1
+google-auth==2.16.0
     # via
     #   -r requirements.in
     #   google-api-core
@@ -61,7 +61,7 @@ google-auth==2.14.1
     #   google-auth-httplib2
 google-auth-httplib2==0.1.0
     # via google-api-python-client
-googleapis-common-protos==1.57.0
+googleapis-common-protos==1.58.0
     # via google-api-core
 httplib2==0.21.0
     # via
@@ -76,7 +76,7 @@ iso8601==1.1.0
     #   python-novaclient
 isodate==0.6.1
     # via msrest
-keystoneauth1==5.0.0
+keystoneauth1==5.1.1
     # via
     #   python-keystoneclient
     #   python-novaclient
@@ -100,7 +100,7 @@ oauthlib==3.2.2
     # via requests-oauthlib
 os-service-types==1.7.0
     # via keystoneauth1
-oslo-config==9.0.0
+oslo-config==9.1.0
     # via python-keystoneclient
 oslo-i18n==5.1.0
     # via
@@ -117,11 +117,11 @@ oslo-utils==6.1.0
     #   oslo-serialization
     #   python-keystoneclient
     #   python-novaclient
-packaging==21.3
+packaging==23.0
     # via
     #   oslo-utils
     #   python-keystoneclient
-pbr==5.11.0
+pbr==5.11.1
     # via
     #   keystoneauth1
     #   os-service-types
@@ -130,13 +130,13 @@ pbr==5.11.0
     #   python-keystoneclient
     #   python-novaclient
     #   stevedore
-portalocker==2.6.0
+portalocker==2.7.0
     # via msal-extensions
-prettytable==3.5.0
+prettytable==3.6.0
     # via python-novaclient
-prometheus-client==0.15.0
+prometheus-client==0.16.0
     # via -r requirements.in
-protobuf==4.21.9
+protobuf==4.21.12
     # via
     #   google-api-core
     #   googleapis-common-protos
@@ -154,12 +154,11 @@ pyparsing==3.0.9
     # via
     #   httplib2
     #   oslo-utils
-    #   packaging
 python-keystoneclient==5.0.1
     # via -r requirements.in
 python-novaclient==18.2.0
     # via -r requirements.in
-pytz==2022.6
+pytz==2022.7.1
     # via
     #   oslo-serialization
     #   oslo-utils
@@ -167,7 +166,7 @@ pyyaml==5.4.1
     # via
     #   -r requirements.in
     #   oslo-config
-requests==2.28.1
+requests==2.28.2
     # via
     #   azure-core
     #   google-api-core
@@ -202,9 +201,9 @@ typing-extensions==4.4.0
     # via azure-core
 uritemplate==4.1.1
     # via google-api-python-client
-urllib3==1.26.12
+urllib3==1.26.14
     # via requests
-wcwidth==0.2.5
+wcwidth==0.2.6
     # via prettytable
 wrapt==1.14.1
     # via debtcollector

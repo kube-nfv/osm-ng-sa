@@ -14,11 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #######################################################################################
-packaging==21.3
+packaging==23.0
     # via setuptools-scm
-pyparsing==3.0.9
-    # via packaging
-setuptools-scm==7.0.5
+setuptools-scm==7.1.0
     # via -r requirements-dist.in
 stdeb==0.10.0
     # via -r requirements-dist.in
