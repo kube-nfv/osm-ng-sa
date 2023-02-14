@@ -15,6 +15,7 @@
 # limitations under the License.
 #######################################################################################
 from datetime import datetime, timedelta
+import logging
 
 from airflow import DAG
 from airflow.decorators import task
@@ -33,24 +34,27 @@ PROMETHEUS_METRIC = "vim_status"
 PROMETHEUS_METRIC_DESCRIPTION = "VIM status"
 SCHEDULE_INTERVAL = 1
 
+# Logging
+logger = logging.getLogger("airflow.task")
+
 
 def get_all_vim():
     """Get VIMs from MongoDB"""
-    print("Getting VIM list")
+    logger.info("Getting VIM list")
 
     cfg = Config()
-    print(cfg.conf)
+    logger.info(cfg.conf)
     common_db = CommonDbClient(cfg)
     vim_accounts = common_db.get_vim_accounts()
     vim_list = []
     for vim in vim_accounts:
-        print(f'Read VIM {vim["_id"]} ({vim["name"]})')
+        logger.info(f'Read VIM {vim["_id"]} ({vim["name"]})')
         vim_list.append(
             {"_id": vim["_id"], "name": vim["name"], "vim_type": vim["vim_type"]}
         )
 
-    print(vim_list)
-    print("Getting VIM list OK")
+    logger.info(vim_list)
+    logger.info("Getting VIM list OK")
     return vim_list
 
 
@@ -87,7 +91,7 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                 return GcpCollector(vim_account)
             if vim_type == "azure":
                 return AzureCollector(vim_account)
-            print(f"VIM type '{vim_type}' not supported")
+            logger.info(f"VIM type '{vim_type}' not supported")
             return None
 
         @task(task_id="get_vim_status_and_send_to_prometheus")
@@ -95,11 +99,11 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
             """Authenticate against VIM and check status"""
 
             # Get VIM account info from MongoDB
-            print(f"Reading VIM info, id: {vim_id}")
+            logger.info(f"Reading VIM info, id: {vim_id}")
             cfg = Config()
             common_db = CommonDbClient(cfg)
             vim_account = common_db.get_vim_account(vim_account_id=vim_id)
-            print(vim_account)
+            logger.info(vim_account)
 
             # Define Prometheus Metric for NS topology
             registry = CollectorRegistry()
@@ -117,10 +121,10 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
             collector = get_vim_collector(vim_account)
             if collector:
                 status = collector.is_vim_ok()
-                print(f"VIM status: {status}")
+                logger.info(f"VIM status: {status}")
                 metric.labels(vim_id).set(1)
             else:
-                print("Error creating VIM collector")
+                logger.info("Error creating VIM collector")
             # Push to Prometheus
             push_to_gateway(
                 gateway=PROMETHEUS_PUSHGW,
@@ -142,7 +146,7 @@ for index, vim in enumerate(vim_list):
         vim_name = vim["name"]
         dag_description = f"Dag for VIM {vim_name} status"
         dag_id = f"vim_status_{vim_id}"
-        print(f"Creating DAG {dag_id}")
+        logger.info(f"Creating DAG {dag_id}")
         globals()[dag_id] = create_dag(
             dag_id=dag_id,
             dag_number=index,
@@ -150,4 +154,4 @@ for index, vim in enumerate(vim_list):
             vim_id=vim_id,
         )
     else:
-        print(f"VIM type '{vim_type}' not supported for monitoring VIM status")
+        logger.info(f"VIM type '{vim_type}' not supported for monitoring VIM status")

@@ -15,6 +15,7 @@
 # limitations under the License.
 #######################################################################################
 from datetime import datetime, timedelta
+import logging
 
 from airflow.decorators import dag, task
 from osm_mon.core.common_db import CommonDbClient
@@ -27,6 +28,9 @@ PROMETHEUS_JOB = "airflow_osm_ns_topology"
 PROMETHEUS_METRIC = "ns_topology"
 PROMETHEUS_METRIC_DESCRIPTION = "Network services topology"
 SCHEDULE_INTERVAL = 2
+
+# Logging
+logger = logging.getLogger("airflow.task")
 
 
 @dag(
@@ -70,9 +74,9 @@ def ns_topology():
         )
 
         # Getting VNFR list from MongoDB
-        print("Getting VNFR list from MongoDB")
+        logger.info("Getting VNFR list from MongoDB")
         cfg = Config()
-        print(cfg.conf)
+        # logger.debug(cfg.conf)
         common_db = CommonDbClient(cfg)
         vnfr_list = common_db.get_vnfrs()
 
@@ -93,45 +97,48 @@ def ns_topology():
             project_id = "None"
             if project_list:
                 project_id = project_list[0]
-            # TODO: use logger with loglevels instead of print
             # Other info
             ns_state = vnfr["_admin"]["nsState"]
             vnf_membex_index = vnfr["member-vnf-index-ref"]
-            print(
-                f"Read VNFR: id: {vnf_id}, ns_id: {ns_id}, ",
-                f"state: {ns_state}, vnfd_id: {vnfd_id}, ",
-                f"vnf_membex_index: {vnf_membex_index}, ",
-                f"project_id: {project_id}",
+            logger.info(
+                f"Read VNFR: id: {vnf_id}, ns_id: {ns_id}, "
+                f"state: {ns_state}, vnfd_id: {vnfd_id}, "
+                f"vnf_membex_index: {vnf_membex_index}, "
+                f"project_id: {project_id}"
             )
             # Only send topology if ns State is one of the nsAllowedStatesSet
             if ns_state not in nsAllowedStatesSet:
                 continue
 
-            print("VDU list:")
+            logger.debug("VDU list:")
             for vdu in vnfr.get("vdur", []):
                 # Label vdu_id
                 vdu_id = vdu["_id"]
                 # Label vim_id
                 vim_info = vdu.get("vim_info")
                 if not vim_info:
-                    print("Error: vim_info not available in vdur")
+                    logger.info("Error: vim_info not available in vdur")
                     continue
                 if len(vim_info) != 1:
-                    print("Error: more than one vim_info in vdur")
+                    logger.info("Error: more than one vim_info in vdur")
                     continue
                 vim_id = next(iter(vim_info))[4:]
+                # TODO: check if it makes sense to use vnfr.vim-account-id as vim_id instead of the vim_info key
                 # Label vm_id
-                vm_id = vdu["vim-id"]
+                vm_id = vdu.get("vim-id")
+                if not vm_id:
+                    logger.info("Error: vim-id not available in vdur")
+                    continue
                 # Other VDU info
                 vdu_name = vdu.get("name", "UNKNOWN")
-                print(
-                    f"    id: {vdu_id}, name: {vdu_name}, "
+                logger.debug(
+                    f"  VDU id: {vdu_id}, name: {vdu_name}, "
                     f"vim_id: {vim_id}, vm_id: {vm_id}"
                 )
-                print(
-                    f"METRIC SAMPLE: ns_id: {ns_id}, ",
-                    f"project_id: {project_id}, vnf_id: {vnf_id}, ",
-                    f"vdu_id: {vdu_id}, vm_id: {vm_id}, vim_id: {vim_id}",
+                logger.info(
+                    f"METRIC SAMPLE: ns_id: {ns_id}, "
+                    f"project_id: {project_id}, vnf_id: {vnf_id}, "
+                    f"vdu_id: {vdu_id}, vm_id: {vm_id}, vim_id: {vim_id}"
                 )
                 metric.labels(
                     ns_id,
@@ -144,7 +151,6 @@ def ns_topology():
                     vnf_membex_index,
                 ).set(1)
 
-        # print("Push to gateway")
         push_to_gateway(
             gateway=PROMETHEUS_PUSHGW, job=PROMETHEUS_JOB, registry=registry
         )

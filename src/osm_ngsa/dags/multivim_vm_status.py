@@ -15,6 +15,7 @@
 # limitations under the License.
 #######################################################################################
 from datetime import datetime, timedelta
+import logging
 
 from airflow import DAG
 from airflow.decorators import task
@@ -33,24 +34,27 @@ PROMETHEUS_METRIC = "vm_status"
 PROMETHEUS_METRIC_DESCRIPTION = "VM Status from VIM"
 SCHEDULE_INTERVAL = 1
 
+# Logging
+logger = logging.getLogger("airflow.task")
+
 
 def get_all_vim():
     """Get VIMs from MongoDB"""
-    print("Getting VIM list")
+    logger.info("Getting VIM list")
 
     cfg = Config()
-    print(cfg.conf)
+    logger.info(cfg.conf)
     common_db = CommonDbClient(cfg)
     vim_accounts = common_db.get_vim_accounts()
     vim_list = []
     for vim in vim_accounts:
-        print(f'Read VIM {vim["_id"]} ({vim["name"]})')
+        logger.info(f'Read VIM {vim["_id"]} ({vim["name"]})')
         vim_list.append(
             {"_id": vim["_id"], "name": vim["name"], "vim_type": vim["vim_type"]}
         )
 
-    print(vim_list)
-    print("Getting VIM list OK")
+    logger.info(vim_list)
+    logger.info("Getting VIM list OK")
     return vim_list
 
 
@@ -87,7 +91,7 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                 return GcpCollector(vim_account)
             if vim_type == "azure":
                 return AzureCollector(vim_account)
-            print(f"VIM type '{vim_type}' not supported")
+            logger.info(f"VIM type '{vim_type}' not supported")
             return None
 
         def get_all_vm_status(vim_account):
@@ -95,7 +99,7 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
             collector = get_vim_collector(vim_account)
             if collector:
                 status = collector.is_vim_ok()
-                print(f"VIM status: {status}")
+                logger.info(f"VIM status: {status}")
                 vm_status_list = collector.collect_servers_status()
                 return vm_status_list
             else:
@@ -106,11 +110,11 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
             """Authenticate against VIM, collect servers status and send to prometheus"""
 
             # Get VIM account info from MongoDB
-            print(f"Reading VIM info, id: {vim_id}")
+            logger.info(f"Reading VIM info, id: {vim_id}")
             cfg = Config()
             common_db = CommonDbClient(cfg)
             vim_account = common_db.get_vim_account(vim_account_id=vim_id)
-            print(vim_account)
+            logger.info(vim_account)
 
             # Define Prometheus Metric for NS topology
             registry = CollectorRegistry()
@@ -126,13 +130,13 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
 
             # Get status of all VM from VIM
             all_vm_status = get_all_vm_status(vim_account)
-            print(f"Got {len(all_vm_status)} VMs with their status:")
+            logger.info(f"Got {len(all_vm_status)} VMs with their status:")
             if all_vm_status:
                 for vm in all_vm_status:
                     vm_id = vm["id"]
                     vm_status = vm["status"]
                     vm_name = vm.get("name", "")
-                    print(f"    {vm_name} ({vm_id}) {vm_status}")
+                    logger.info(f"    {vm_name} ({vm_id}) {vm_status}")
                     metric.labels(vm_id, vim_id).set(vm_status)
                 # Push to Prometheus only if there are VM
                 push_to_gateway(
@@ -155,7 +159,7 @@ for index, vim in enumerate(vim_list):
         vim_name = vim["name"]
         dag_description = f"Dag for vim {vim_name}"
         dag_id = f"vm_status_vim_{vim_id}"
-        print(f"Creating DAG {dag_id}")
+        logger.info(f"Creating DAG {dag_id}")
         globals()[dag_id] = create_dag(
             dag_id=dag_id,
             dag_number=index,
@@ -163,4 +167,4 @@ for index, vim in enumerate(vim_list):
             vim_id=vim_id,
         )
     else:
-        print(f"VIM type '{vim_type}' not supported for collecting VM status")
+        logger.info(f"VIM type '{vim_type}' not supported for collecting VM status")
