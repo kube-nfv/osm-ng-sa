@@ -21,7 +21,6 @@ azure-mgmt-compute
 gnocchiclient
 google-api-python-client
 google-auth
-packaging==23.0
 prometheus-api-client
 prometheus-client
 python-ceilometerclient

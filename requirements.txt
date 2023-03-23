@@ -159,9 +159,8 @@ oslo-utils==6.1.0
     #   python-ceilometerclient
     #   python-keystoneclient
     #   python-novaclient
-packaging==23.0
+packaging==23.1
     # via
-    #   -r requirements.in
     #   matplotlib
     #   oslo-utils
     #   python-keystoneclient
