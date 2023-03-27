@@ -25,3 +25,7 @@ database:
   name: osm
   commonkey: gj7LmbCexbmII7memwbGRRdfbYuT3nvy
 
+message:
+  driver: kafka
+  host: kafka
+  port: 9092

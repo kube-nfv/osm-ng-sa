@@ -18,9 +18,11 @@
 azure-common
 azure-identity
 azure-mgmt-compute
+gnocchiclient
 google-api-python-client
 google-auth
 prometheus-client
+python-ceilometerclient
 python-keystoneclient
 python-novaclient
 pyyaml==5.4.1

@@ -30,9 +30,9 @@ class CommonDbClient:
             )
         self.common_db.db_connect(config.get("database"))
 
-    def get_vnfr(self, nsr_id: str, member_index: int):
+    def get_vnfr(self, nsr_id: str, member_index: str):
         vnfr = self.common_db.get_one(
-            "vnfrs", {"nsr-id-ref": nsr_id, "member-vnf-index-ref": str(member_index)}
+            "vnfrs", {"nsr-id-ref": nsr_id, "member-vnf-index-ref": member_index}
         )
         return vnfr
 
@@ -88,3 +88,23 @@ class CommonDbClient:
                         vim_account_id,
                     )
         return vim_account
+
+    def get_alert(self, nsr_id: str, vnf_member_index: str, vdu_name: str):
+        alert = self.common_db.get_one(
+            "alerts",
+            {
+                "tags.ns_id": nsr_id,
+                "tags.vnf_member_index": vnf_member_index,
+                "tags.vdu_name": vdu_name,
+            },
+        )
+        return alert
+
+    def update_alert_status(self, uuid: str, alarm_status: str):
+        modified_count = self.common_db.set_one(
+            "alerts", {"uuid": uuid}, {"alarm_status": alarm_status}
+        )
+        return modified_count
+
+    def create_nslcmop(self, nslcmop: dict):
+        self.common_db.create("nslcmops", nslcmop)
