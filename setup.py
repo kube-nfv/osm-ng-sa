@@ -16,7 +16,8 @@
 # limitations under the License.
 
 import os
-from setuptools import setup, find_packages, find_namespace_packages
+
+from setuptools import find_namespace_packages, setup
 
 _name = "osm_ngsa"
 _description = "OSM Service Assurance Airflow DAGs and libraries"
@@ -27,9 +28,7 @@ setup(
     name=_name,
     description=_description,
     long_description=README,
-    use_scm_version={
-        "write_to": "src/osm_ngsa/_version.py"
-    },
+    use_scm_version={"write_to": "src/osm_ngsa/_version.py"},
     author="ETSI OSM",
     author_email="osmsupport@etsi.org",
     maintainer="ETSI OSM",
@@ -37,8 +36,7 @@ setup(
     url="https://osm.etsi.org/gitweb/?p=osm/NG-SA.git;a=summary",
     license="Apache 2.0",
     package_dir={"": "src"},
-    packages=find_namespace_packages(where='src'),
+    packages=find_namespace_packages(where="src"),
     include_package_data=True,
     setup_requires=["setuptools-scm"],
 )
-
