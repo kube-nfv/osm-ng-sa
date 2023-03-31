@@ -27,7 +27,6 @@ log = logging.getLogger(__name__)
 
 
 class AzureCollector(VIMConnector):
-
     # Translate azure provisioning state to OSM provision state.
     # The first three ones are the transitional status once a user initiated
     # action has been requested. Once the operation is complete, it will
