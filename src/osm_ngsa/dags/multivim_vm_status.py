@@ -70,6 +70,7 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
         },
         description=dag_description,
         is_paused_upon_creation=False,
+        max_active_runs=1,
         # schedule_interval=timedelta(minutes=SCHEDULE_INTERVAL),
         schedule_interval=f"*/{SCHEDULE_INTERVAL} * * * *",
         start_date=datetime(2022, 1, 1),

@@ -42,6 +42,7 @@ logger = logging.getLogger("airflow.task")
     },
     description="NS topology",
     is_paused_upon_creation=False,
+    max_active_runs=1,
     # schedule_interval=timedelta(minutes=SCHEDULE_INTERVAL),
     schedule_interval=f"*/{SCHEDULE_INTERVAL} * * * *",
     start_date=datetime(2022, 1, 1),
