@@ -36,4 +36,6 @@ dist
 *.local
 local
 
+# Version files
 src/osm_ngsa/_version.py
+osm_webhook_translator/src/osm_webhook_translator/_version.py
