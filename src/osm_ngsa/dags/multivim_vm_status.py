@@ -104,7 +104,8 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                 vm_status_list = collector.collect_servers_status()
                 return vm_status_list
             else:
-                return None
+                logger.error("No collector for VIM")
+                return []
 
         @task(task_id="get_all_vm_status_and_send_to_prometheus")
         def get_all_vm_status_and_send_to_prometheus(vim_id: str):
@@ -132,19 +133,18 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
             # Get status of all VM from VIM
             all_vm_status = get_all_vm_status(vim_account)
             logger.info(f"Got {len(all_vm_status)} VMs with their status:")
-            if all_vm_status:
-                for vm in all_vm_status:
-                    vm_id = vm["id"]
-                    vm_status = vm["status"]
-                    vm_name = vm.get("name", "")
-                    logger.info(f"    {vm_name} ({vm_id}) {vm_status}")
-                    metric.labels(vm_id, vim_id).set(vm_status)
-                # Push to Prometheus only if there are VM
-                push_to_gateway(
-                    gateway=PROMETHEUS_PUSHGW,
-                    job=f"{PROMETHEUS_JOB_PREFIX}{vim_id}",
-                    registry=registry,
-                )
+            for vm in all_vm_status:
+                vm_id = vm["id"]
+                vm_status = vm["status"]
+                vm_name = vm.get("name", "")
+                logger.info(f"    {vm_name} ({vm_id}) {vm_status}")
+                metric.labels(vm_id, vim_id).set(vm_status)
+            # Push to Prometheus
+            push_to_gateway(
+                gateway=PROMETHEUS_PUSHGW,
+                job=f"{PROMETHEUS_JOB_PREFIX}{vim_id}",
+                registry=registry,
+            )
             return
 
         get_all_vm_status_and_send_to_prometheus(vim_id)
