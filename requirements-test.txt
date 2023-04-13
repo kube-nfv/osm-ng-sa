@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #######################################################################################
-coverage==7.1.0
+coverage==7.2.3
     # via -r requirements-test.in
-mock==5.0.1
+mock==5.0.2
     # via -r requirements-test.in
 nose2==0.12.0
     # via -r requirements-test.in

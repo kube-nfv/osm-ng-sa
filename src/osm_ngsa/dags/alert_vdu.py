@@ -69,15 +69,19 @@ def alert_vdu():
             if status == "firing":
                 # Searching alerting rule in MongoDB
                 logger.info(
-                    f"Searching alert rule in MongoDB: ns_id {ns_id}, "
+                    f"Searching healing alert rule in MongoDB: ns_id {ns_id}, "
                     f"vnf_member_index {vnf_member_index}, "
                     f"vdu_name {vdu_name}, "
                     f"vm_id {vm_id}"
                 )
                 alert = common_db.get_alert(
-                    nsr_id=ns_id, vnf_member_index=vnf_member_index, vdu_name=vdu_name
+                    nsr_id=ns_id,
+                    vnf_member_index=vnf_member_index,
+                    vdu_id=None,
+                    vdu_name=vdu_name,
+                    action_type="healing",
                 )
-                if alert and alert["action_type"] == "healing":
+                if alert:
                     logger.info("Found an alert rule:")
                     logger.info(alert)
                     # Update alert status
@@ -166,7 +170,11 @@ def alert_vdu():
                     f"vm_id {vm_id}"
                 )
                 alert = common_db.get_alert(
-                    nsr_id=ns_id, vnf_member_index=vnf_member_index, vdu_name=vdu_name
+                    nsr_id=ns_id,
+                    vnf_member_index=vnf_member_index,
+                    vdu_id=None,
+                    vdu_name=vdu_name,
+                    action_type="healing",
                 )
                 if alert:
                     logger.info("Found an alert rule, updating status")

@@ -17,4 +17,4 @@
 
 git+https://osm.etsi.org/gerrit/osm/common.git@master#egg=osm-common
 -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
-apache-airflow==2.4.*
+apache-airflow==2.5.*
