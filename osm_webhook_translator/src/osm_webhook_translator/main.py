@@ -15,6 +15,7 @@
 # limitations under the License.
 #######################################################################################
 from datetime import datetime
+import logging
 import os
 from random import randint
 
@@ -22,6 +23,12 @@ from fastapi import FastAPI
 import requests
 
 
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s %(filename)s:%(lineno)s %(message)s",
+    datefmt="%Y/%m/%d %H:%M:%S",
+)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 app = FastAPI()
 
 
@@ -37,16 +44,16 @@ def send_to_airflow(output_endpoint, content):
         rnd = str(randint(0, 999999)).rjust(6, "0")
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         dag_run_id = output_endpoint + "_" + timestamp + "_" + rnd
-        print(f"HTTP POST {url}...")
+        logger.info(f"HTTP POST {url}")
         req = requests.post(
             url=url,
             auth=(airflow_user, airflow_pass),
             json={"dag_run_id": dag_run_id, "conf": content},
         )
-        print(req.text)
+        logger.info(f"Response: {req.text}")
         # timeout and retries
     except Exception as e:
-        print(f"HTTP error: {repr(e)}")
+        logger.error(f"HTTP error: {repr(e)}")
         raise requests.HTTPException(status_code=403, detail=repr(e))
 
 
