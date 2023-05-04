@@ -34,43 +34,43 @@ PROMETHEUS_PUSHGW = "pushgateway-prometheus-pushgateway:9091"
 PROMETHEUS_JOB_PREFIX = "airflow_osm_vm_metrics_"
 PROMETHEUS_METRICS = {
     "cpu_utilization": {
-        "metric_name": "cpu_utilization",
+        "metric_name": "osm_cpu_utilization",
         "metric_descr": "CPU usage percentage",
     },
     "average_memory_utilization": {
-        "metric_name": "average_memory_utilization",
+        "metric_name": "osm_average_memory_utilization",
         "metric_descr": "Volume of RAM in MB used by the VM",
     },
     "disk_read_ops": {
-        "metric_name": "disk_read_ops",
+        "metric_name": "osm_disk_read_ops",
         "metric_descr": "Number of read requests",
     },
     "disk_write_ops": {
-        "metric_name": "disk_write_ops",
+        "metric_name": "osm_disk_write_ops",
         "metric_descr": "Number of write requests",
     },
     "disk_read_bytes": {
-        "metric_name": "disk_read_bytes",
+        "metric_name": "osm_disk_read_bytes",
         "metric_descr": "Volume of reads in bytes",
     },
     "disk_write_bytes": {
-        "metric_name": "disk_write_bytes",
+        "metric_name": "osm_disk_write_bytes",
         "metric_descr": "Volume of writes in bytes",
     },
     "packets_received": {
-        "metric_name": "packets_received",
+        "metric_name": "osm_packets_received",
         "metric_descr": "Number of incoming packets",
     },
     "packets_sent": {
-        "metric_name": "packets_sent",
+        "metric_name": "osm_packets_sent",
         "metric_descr": "Number of outgoing packets",
     },
     "packets_in_dropped": {
-        "metric_name": "packets_in_dropped",
+        "metric_name": "osm_packets_in_dropped",
         "metric_descr": "Number of incoming dropped packets",
     },
     "packets_out_dropped": {
-        "metric_name": "packets_out_dropped",
+        "metric_name": "osm_packets_out_dropped",
         "metric_descr": "Number of outgoing dropped packets",
     },
 }
