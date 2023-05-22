@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #######################################################################################
-import asyncio
 from typing import Callable, List
 
 from osm_common import msgkafka, msglocal
@@ -22,7 +21,7 @@ from osm_mon.core.config import Config
 
 
 class MessageBusClient:
-    def __init__(self, config: Config, loop=None):
+    def __init__(self, config: Config):
         if config.get("message", "driver") == "local":
             self.msg_bus = msglocal.MsgLocal()
         elif config.get("message", "driver") == "kafka":
@@ -32,9 +31,6 @@ class MessageBusClient:
                 "Unknown message bug driver {}".format(config.get("section", "driver"))
             )
         self.msg_bus.connect(config.get("message"))
-        if not loop:
-            loop = asyncio.get_event_loop()
-        self.loop = loop
 
     async def aioread(self, topics: List[str], callback: Callable = None, **kwargs):
         """
@@ -44,7 +40,7 @@ class MessageBusClient:
         :param kwargs: Keyword arguments to be passed to callback function.
         :return: None
         """
-        await self.msg_bus.aioread(topics, self.loop, aiocallback=callback, **kwargs)
+        await self.msg_bus.aioread(topics, aiocallback=callback, **kwargs)
 
     async def aiowrite(self, topic: str, key: str, msg: dict):
         """
@@ -54,7 +50,7 @@ class MessageBusClient:
         :param msg: Dictionary containing message to be written.
         :return: None
         """
-        await self.msg_bus.aiowrite(topic, key, msg, self.loop)
+        await self.msg_bus.aiowrite(topic, key, msg)
 
     async def aioread_once(self, topic: str):
         """
@@ -62,5 +58,5 @@ class MessageBusClient:
         :param topic: topic to retrieve message from.
         :return: tuple(topic, key, message)
         """
-        result = await self.msg_bus.aioread(topic, self.loop)
+        result = await self.msg_bus.aioread(topic)
         return result
