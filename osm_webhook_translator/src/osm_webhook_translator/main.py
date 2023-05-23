@@ -54,7 +54,7 @@ def send_to_airflow(output_endpoint, content):
         # timeout and retries
     except Exception as e:
         logger.error(f"HTTP error: {repr(e)}")
-        raise requests.HTTPException(status_code=403, detail=repr(e))
+        raise requests.HTTPError(status_code=403, detail=repr(e))
 
 
 @app.post("/{input_endpoint}")

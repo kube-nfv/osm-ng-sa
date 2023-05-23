@@ -242,7 +242,7 @@ pyyaml==5.4.1
     #   oslo-config
 regex==2023.5.5
     # via dateparser
-requests==2.30.0
+requests==2.31.0
     # via
     #   azure-core
     #   google-api-core
@@ -280,7 +280,7 @@ stevedore==5.1.0
     #   python-ceilometerclient
     #   python-keystoneclient
     #   python-novaclient
-typing-extensions==4.5.0
+typing-extensions==4.6.0
     # via azure-core
 tzdata==2023.3
     # via pandas
@@ -290,7 +290,7 @@ ujson==5.7.0
     # via gnocchiclient
 uritemplate==4.1.1
     # via google-api-python-client
-urllib3==1.26.15
+urllib3==1.26.16
     # via
     #   google-auth
     #   requests

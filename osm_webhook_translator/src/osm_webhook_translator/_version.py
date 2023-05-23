@@ -14,8 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #######################################################################################
-
-git+https://osm.etsi.org/gerrit/osm/common.git@master#egg=osm-common
--r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
-apache-airflow==2.5.3
-urllib3==1.26.16
+__version__ = version = '12.0.4.dev21+g4e36505'
+__version_tuple__ = version_tuple = (12, 0, 4, 'dev21', 'g4e36505')

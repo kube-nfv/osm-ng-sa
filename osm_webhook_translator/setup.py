@@ -30,7 +30,7 @@ setup(
     name=_name,
     description=_description,
     long_description=README,
-    version=__version__,  # noqa: F821
+    version=__version__,  # noqa: F821  # pylint: disable=E0602
     author="ETSI OSM",
     author_email="osmsupport@etsi.org",
     maintainer="ETSI OSM",
