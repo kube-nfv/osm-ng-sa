@@ -133,8 +133,7 @@ class AzureCollector(VIMConnector):
     def __init__(self, vim_account: Dict):
         self.vim_account = vim_account
         self.reload_client = True
-        logger = logging.getLogger("azure")
-        logger.setLevel(logging.ERROR)
+
         # Store config to create azure subscription later
         self._config = {
             "user": vim_account["vim_user"],

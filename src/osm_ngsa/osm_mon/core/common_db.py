@@ -65,6 +65,11 @@ class CommonDbClient:
     def decrypt_vim_password(self, vim_password: str, schema_version: str, vim_id: str):
         return self.common_db.decrypt(vim_password, schema_version, vim_id)
 
+    def decrypt_sdnc_password(
+        self, sdnc_password: str, schema_version: str, sdnc_id: str
+    ):
+        return self.common_db.decrypt(sdnc_password, schema_version, sdnc_id)
+
     def get_vim_accounts(self):
         return self.common_db.get_list("vim_accounts")
 
@@ -96,6 +101,16 @@ class CommonDbClient:
                         vim_account_id,
                     )
         return vim_account
+
+    def get_sdnc_accounts(self):
+        return self.common_db.get_list("sdns")
+
+    def get_sdnc_account(self, sdnc_account_id: str) -> dict:
+        sdnc_account = self.common_db.get_one("sdns", {"_id": sdnc_account_id})
+        sdnc_account["password"] = self.decrypt_vim_password(
+            sdnc_account["password"], sdnc_account["schema_version"], sdnc_account_id
+        )
+        return sdnc_account
 
     def get_alert(
         self,
