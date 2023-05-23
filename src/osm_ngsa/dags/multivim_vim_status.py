@@ -30,7 +30,7 @@ from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 SUPPORTED_VIM_TYPES = ["openstack", "vio", "gcp", "azure"]
 PROMETHEUS_PUSHGW = "pushgateway-prometheus-pushgateway:9091"
 PROMETHEUS_JOB_PREFIX = "airflow_osm_vim_status_"
-PROMETHEUS_METRIC = "vim_status"
+PROMETHEUS_METRIC = "osm_vim_status"
 PROMETHEUS_METRIC_DESCRIPTION = "VIM status"
 SCHEDULE_INTERVAL = 1
 
@@ -111,7 +111,7 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                 PROMETHEUS_METRIC,
                 PROMETHEUS_METRIC_DESCRIPTION,
                 labelnames=[
-                    "vim_id",
+                    "vim_account_id",
                 ],
                 registry=registry,
             )
