@@ -43,7 +43,7 @@ logger = logging.getLogger("airflow.task")
     start_date=datetime(2022, 1, 1),
     tags=["osm", "webhook"],
 )
-def alert_vdu():
+def vdu_down():
     @task(task_id="main_task")
     def main_task():
         logger.debug("Running main task...")
@@ -184,4 +184,4 @@ def alert_vdu():
     main_task()
 
 
-dag = alert_vdu()
+dag = vdu_down()
