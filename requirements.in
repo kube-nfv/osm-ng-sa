@@ -27,4 +27,4 @@ prometheus-client
 python-ceilometerclient
 python-keystoneclient
 python-novaclient
-pyyaml==5.4.1
+pyyaml>6
