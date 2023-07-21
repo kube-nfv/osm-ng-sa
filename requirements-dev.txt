@@ -294,7 +294,7 @@ pytz==2023.3
     # via flask-babel
 pytzdata==2020.1
     # via pendulum
-pyyaml==5.4.1
+pyyaml==6.0.1
     # via
     #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
     #   apispec
