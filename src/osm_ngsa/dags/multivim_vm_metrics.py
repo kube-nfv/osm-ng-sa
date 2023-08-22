@@ -24,13 +24,14 @@ from airflow.decorators import task
 from osm_mon.core.common_db import CommonDbClient
 from osm_mon.core.config import Config
 from osm_mon.vim_connectors.azure import AzureCollector
+from osm_mon.vim_connectors.gcp import GcpCollector
 from osm_mon.vim_connectors.openstack import OpenStackCollector
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 
 
 SCHEDULE_INTERVAL = 5
 COLLECTOR_MAX_METRICS_PER_TASK = 100
-SUPPORTED_VIM_TYPES = ["openstack", "vio", "azure"]
+SUPPORTED_VIM_TYPES = ["openstack", "vio", "azure", "gcp"]
 PROMETHEUS_PUSHGW = "pushgateway-prometheus-pushgateway:9091"
 PROMETHEUS_JOB_PREFIX = "airflow_osm_vm_metrics_"
 PROMETHEUS_METRICS = {
@@ -229,6 +230,8 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                 collector = OpenStackCollector(vim_account)
             elif vim_type == "azure":
                 collector = AzureCollector(vim_account)
+            elif vim_type == "gcp":
+                collector = GcpCollector(vim_account)
             else:
                 logger.error(f"VIM type '{vim_type}' not supported")
                 return None
