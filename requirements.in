@@ -22,6 +22,7 @@ azure-mgmt-monitor
 gnocchiclient
 google-api-python-client
 google-auth
+google-cloud-monitoring
 packaging==23.1
 prometheus-api-client
 prometheus-client

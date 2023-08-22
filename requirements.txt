@@ -72,9 +72,11 @@ futurist==2.4.1
     # via gnocchiclient
 gnocchiclient==7.0.8
     # via -r requirements.in
-google-api-core==2.12.0
-    # via google-api-python-client
-google-api-python-client==2.101.0
+google-api-core[grpc]==2.12.0
+    # via
+    #   google-api-python-client
+    #   google-cloud-monitoring
+google-api-python-client==2.102.0
     # via -r requirements.in
 google-auth==2.23.2
     # via
@@ -84,7 +86,17 @@ google-auth==2.23.2
     #   google-auth-httplib2
 google-auth-httplib2==0.1.1
     # via google-api-python-client
+google-cloud-monitoring==2.15.1
+    # via -r requirements.in
 googleapis-common-protos==1.60.0
+    # via
+    #   google-api-core
+    #   grpcio-status
+grpcio==1.59.0
+    # via
+    #   google-api-core
+    #   grpcio-status
+grpcio-status==1.59.0
     # via google-api-core
 httmock==1.4.0
     # via prometheus-api-client
@@ -96,7 +108,7 @@ idna==3.4
     # via requests
 importlib-metadata==6.8.0
     # via cliff
-iso8601==2.0.0
+iso8601==2.1.0
     # via
     #   gnocchiclient
     #   keystoneauth1
@@ -190,10 +202,15 @@ prometheus-api-client==0.5.4
     # via -r requirements.in
 prometheus-client==0.17.1
     # via -r requirements.in
+proto-plus==1.22.3
+    # via google-cloud-monitoring
 protobuf==4.24.3
     # via
     #   google-api-core
+    #   google-cloud-monitoring
     #   googleapis-common-protos
+    #   grpcio-status
+    #   proto-plus
 pyasn1==0.5.0
     # via
     #   pyasn1-modules
@@ -234,7 +251,7 @@ pyyaml==6.0.1
     #   -r requirements.in
     #   cliff
     #   oslo-config
-regex==2023.8.8
+regex==2023.10.3
     # via dateparser
 requests==2.31.0
     # via
@@ -280,7 +297,7 @@ ujson==5.8.0
     # via gnocchiclient
 uritemplate==4.1.1
     # via google-api-python-client
-urllib3==2.0.5
+urllib3==2.0.6
     # via requests
 wcwidth==0.2.8
     # via cmd2
