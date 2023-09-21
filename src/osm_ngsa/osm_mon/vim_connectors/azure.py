@@ -33,6 +33,10 @@ METRIC_MAPPINGS = {
         "metricname": "Percentage CPU",
         "aggregation": "Average",
     },
+    "average_memory_utilization": {
+        "metricname": "Available Memory Bytes",
+        "aggregation": "Average",
+    },
     "disk_read_ops": {
         "metricname": "Disk Read Operations/Sec",
         "aggregation": "Average",
@@ -49,7 +53,6 @@ METRIC_MAPPINGS = {
         "metricname": "Disk Write Bytes",
         "aggregation": "Total",
     },
-    # "average_memory_utilization": {},
     # "packets_in_dropped": {},
     # "packets_out_dropped": {},
     # "packets_received": {},
@@ -133,6 +136,7 @@ class AzureCollector(VIMConnector):
     def __init__(self, vim_account: Dict):
         self.vim_account = vim_account
         self.reload_client = True
+        self.vm_sizes = {}
 
         # Store config to create azure subscription later
         self._config = {
@@ -157,6 +161,13 @@ class AzureCollector(VIMConnector):
             log.error("Azure resource_group is not specified at config")
             return
 
+        # REGION_NAME
+        if "region_name" in config:
+            self.region = config.get("region_name")
+        else:
+            log.error("Azure region_name is not specified at config")
+            return
+
     def _reload_connection(self):
         if self.reload_client:
             log.debug("reloading azure client")
@@ -178,6 +189,15 @@ class AzureCollector(VIMConnector):
                 )
                 # Set to client created
                 self.reload_client = False
+            except Exception as e:
+                log.error(e)
+
+    def _get_region_vm_sizes(self):
+        if len(self.vm_sizes) == 0:
+            log.debug("getting VM sizes available in region")
+            try:
+                for size in self.conn_compute.virtual_machine_sizes.list(self.region):
+                    self.vm_sizes[size.name] = size
             except Exception as e:
                 log.error(e)
 
@@ -205,7 +225,6 @@ class AzureCollector(VIMConnector):
                             status = self.power_state2osm.get(
                                 splitted_status[1], "OTHER"
                             )
-                # log.info(f'id: {id}, name: {name}, status: {status}')
                 vm = {
                     "id": id,
                     "name": name,
@@ -214,6 +233,7 @@ class AzureCollector(VIMConnector):
                 servers.append(vm)
         except Exception as e:
             log.error(e)
+
         return servers
 
     def is_vim_ok(self) -> bool:
@@ -231,14 +251,29 @@ class AzureCollector(VIMConnector):
         self._reload_connection()
 
         metric_results = []
-        log.info(metric_list)
+        # VMs RAM cache for calculating "average_memory_utilization" metric
+        cache = {}
         for metric in metric_list:
             server = metric["vm_id"]
             metric_name = metric["metric"]
             metric_mapping = METRIC_MAPPINGS.get(metric_name)
             if not metric_mapping:
-                # log.info(f"Metric {metric_name} not available in Azure")
                 continue
+            if metric_name == "average_memory_utilization" and len(cache) == 0:
+                # storing VMs RAM sizes in cache
+                self._get_region_vm_sizes()
+                try:
+                    for vm in self.conn_compute.virtual_machines.list(
+                        self.resource_group
+                    ):
+                        id = vm.id
+                        size_name = vm.hardware_profile.vm_size
+                        vm_size = self.vm_sizes.get(size_name)
+                        if vm_size:
+                            ram = vm_size.memory_in_mb
+                            cache[id] = ram
+                except Exception as e:
+                    log.error(e)
             azure_metric_name = metric_mapping["metricname"]
             azure_aggregation = metric_mapping["aggregation"]
             end = datetime.datetime.now()
@@ -272,9 +307,18 @@ class AzureCollector(VIMConnector):
                             n_metrics += 1
             if n_metrics > 0:
                 value = total / n_metrics
-                log.info(f"value = {value}")
-                metric["value"] = value
-                metric_results.append(metric)
+                if metric_name == "average_memory_utilization":
+                    ram = cache.get(server)
+                    if ram:
+                        log.info(f"VM RAM = {ram}")
+                        value = ram - (value / 1048576)
+                    else:
+                        log.error(f"Not found RAM value for server {server}")
+                        value = None
+                if value is not None:
+                    log.info(f"value = {value}")
+                    metric["value"] = value
+                    metric_results.append(metric)
             else:
                 log.info("No metric available")
 
