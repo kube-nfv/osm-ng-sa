@@ -14,15 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #######################################################################################
-packaging==23.1
+packaging==23.2
     # via setuptools-scm
-setuptools-scm==7.1.0
+setuptools-scm==8.0.4
     # via -r osm_webhook_translator/requirements-dist.in
 stdeb==0.10.0
     # via -r osm_webhook_translator/requirements-dist.in
 tomli==2.0.1
     # via setuptools-scm
-typing-extensions==4.6.0
+typing-extensions==4.8.0
     # via setuptools-scm
 
 # The following packages are considered to be unsafe in a requirements file:
