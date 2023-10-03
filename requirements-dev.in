@@ -18,4 +18,3 @@
 git+https://osm.etsi.org/gerrit/osm/common.git@v14.0#egg=osm-common
 -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v14.0
 apache-airflow==2.5.3
-urllib3==1.26.16
