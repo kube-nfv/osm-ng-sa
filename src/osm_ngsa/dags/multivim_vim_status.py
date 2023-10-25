@@ -122,7 +122,8 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
             if collector:
                 status = collector.is_vim_ok()
                 logger.info(f"VIM status: {status}")
-                metric.labels(vim_id).set(1)
+                if status:
+                    metric.labels(vim_id).set(1)
             else:
                 logger.info("Error creating VIM collector")
             # Push to Prometheus
