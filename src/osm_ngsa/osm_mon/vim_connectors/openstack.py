@@ -28,6 +28,7 @@ from keystoneauth1.exceptions.catalog import EndpointNotFound
 from keystoneauth1.identity import v3
 from novaclient import client as nova_client
 from osm_mon.vim_connectors.base_vim import VIMConnector
+from osm_mon.vim_connectors.vrops_helper import vROPS_Helper
 from prometheus_api_client import PrometheusConnect as prometheus_client
 
 log = logging.getLogger(__name__)
@@ -95,7 +96,6 @@ class OpenStackCollector(VIMConnector):
         self.vim_session = None
         self.vim_session = self._get_session(vim_account)
         self.nova = self._build_nova_client()
-        # self.gnocchi = self._build_gnocchi_client()
         self.backend = self._get_backend(vim_account, self.vim_session)
 
     def _get_session(self, creds: Dict):
@@ -139,6 +139,20 @@ class OpenStackCollector(VIMConnector):
             #     log.error(f"Can't create prometheus client, {e}")
             #     return None
             return None
+
+        if "config" in vim_account and "vim_type" in vim_account["config"]:
+            vim_type = vim_account["config"]["vim_type"].lower()
+            log.debug(f"vim_type: {vim_type}")
+            log.debug(f"vim_account[config]: {vim_account['config']}")
+            if vim_type == "vio" and "vrops_site" in vim_account["config"]:
+                try:
+                    log.debug("Using vROPS backend to collect metric")
+                    vrops = VropsBackend(vim_account)
+                    return vrops
+                except Exception as e:
+                    log.error(f"Can't create vROPS client, {e}")
+            return None
+
         try:
             gnocchi = GnocchiBackend(vim_account, vim_session)
             gnocchi.client.metric.list(limit=1)
@@ -196,6 +210,10 @@ class OpenStackCollector(VIMConnector):
             log.info("Using Prometheus as backend (NOT SUPPORTED)")
             return []
 
+        if type(self.backend) is VropsBackend:
+            log.info("Using vROPS as backend")
+            return self.backend.collect_metrics(metric_list)
+
         metric_results = []
         for metric in metric_list:
             server = metric["vm_id"]
@@ -222,6 +240,9 @@ class OpenstackBackend:
     def collect_metric(
         self, metric_type: MetricType, metric_name: str, resource_id: str
     ):
+        pass
+
+    def collect_metrics(self, metrics_list: List[Dict]):
         pass
 
 
@@ -418,3 +439,41 @@ class CeilometerBackend(OpenstackBackend):
             q=[{"field": "resource_id", "op": "eq", "value": resource_id}],
         )
         return measures[0].counter_volume if measures else None
+
+
+class VropsBackend(OpenstackBackend):
+    def __init__(self, vim_account: dict):
+        self.vrops = vROPS_Helper(
+            vrops_site=vim_account["config"]["vrops_site"],
+            vrops_user=vim_account["config"]["vrops_user"],
+            vrops_password=vim_account["config"]["vrops_password"],
+        )
+
+    def collect_metrics(self, metrics_list: List[Dict]):
+        # Fetch the list of all known resources from vROPS.
+        resource_list = self.vrops.get_vm_resource_list_from_vrops()
+
+        vdu_mappings = {}
+        extended_metrics = []
+        for metric in metrics_list:
+            vim_id = metric["vm_id"]
+            # Map the vROPS instance id to the vim-id so we can look it up.
+            for resource in resource_list:
+                for resourceIdentifier in resource["resourceKey"][
+                    "resourceIdentifiers"
+                ]:
+                    if (
+                        resourceIdentifier["identifierType"]["name"]
+                        == "VMEntityInstanceUUID"
+                    ):
+                        if resourceIdentifier["value"] != vim_id:
+                            continue
+                        vdu_mappings[vim_id] = resource["identifier"]
+            if vim_id in vdu_mappings:
+                metric["vrops_id"] = vdu_mappings[vim_id]
+                extended_metrics.append(metric)
+
+        if len(extended_metrics) != 0:
+            return self.vrops.get_metrics(extended_metrics)
+        else:
+            return []
