@@ -226,7 +226,7 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                 vim_type = vim_account["config"]["vim_type"].lower()
                 if vim_type == "vio" and "vrops_site" not in vim_account["config"]:
                     vim_type = "openstack"
-            if vim_type == "openstack":
+            if vim_type == "openstack" or vim_type == "vio":
                 collector = OpenStackCollector(vim_account)
             elif vim_type == "azure":
                 collector = AzureCollector(vim_account)
