@@ -15,6 +15,6 @@
 # limitations under the License.
 #######################################################################################
 
-git+https://osm.etsi.org/gerrit/osm/common.git@master#egg=osm-common
--r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+git+https://osm.etsi.org/gerrit/osm/common.git@v15.0#egg=osm-common
+-r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v15.0
 apache-airflow==2.5.3
