@@ -218,7 +218,10 @@ class OpenStackCollector(VIMConnector):
         for metric in metric_list:
             server = metric["vm_id"]
             metric_name = metric["metric"]
-            openstack_metric_name = METRIC_MAPPINGS[metric_name]
+            try:
+                openstack_metric_name = METRIC_MAPPINGS[metric_name]
+            except KeyError:
+                continue
             metric_type = self._get_metric_type(metric_name)
             log.info(f"Collecting metric {openstack_metric_name} for {server}")
             try:
