@@ -103,7 +103,11 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
             cfg = Config()
             common_db = CommonDbClient(cfg)
             vim_account = common_db.get_vim_account(vim_account_id=vim_id)
-            logger.info(vim_account)
+            vim_name = vim_account["name"]
+            logger.info(f"vim_account: {vim_account}")
+            logger.info(f"vim_name: {vim_name}")
+            projects_read = vim_account["_admin"]["projects_read"]
+            logger.info(f"projects_read: {projects_read}")
 
             # Define Prometheus Metric for NS topology
             registry = CollectorRegistry()
@@ -112,10 +116,13 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                 PROMETHEUS_METRIC_DESCRIPTION,
                 labelnames=[
                     "vim_account_id",
+                    "project_id",
+                    "vim_name",
                 ],
                 registry=registry,
             )
-            metric.labels(vim_id).set(0)
+            for project_id in projects_read:
+                metric.labels(vim_id, project_id, vim_name).set(0)
 
             # Get status of VIM
             collector = get_vim_collector(vim_account)
@@ -123,7 +130,8 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                 status = collector.is_vim_ok()
                 logger.info(f"VIM status: {status}")
                 if status:
-                    metric.labels(vim_id).set(1)
+                    for project_id in projects_read:
+                        metric.labels(vim_id, project_id, vim_name).set(1)
             else:
                 logger.info("Error creating VIM collector")
             # Push to Prometheus

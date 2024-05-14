@@ -70,6 +70,7 @@ def ns_topology():
                 "vim_id",
                 "vdu_name",
                 "vnf_member_index",
+                "ns_name",
             ],
             registry=registry,
         )
@@ -91,6 +92,8 @@ def ns_topology():
             vnf_id = vnfr["_id"]
             # Label ns_id
             ns_id = vnfr["nsr-id-ref"]
+            nsr = common_db.get_nsr(ns_id)
+            ns_name = nsr["name"]
             # Label vnfd_id
             vnfd_id = vnfr["vnfd-ref"]
             # Label project_id
@@ -102,7 +105,7 @@ def ns_topology():
             ns_state = vnfr["_admin"]["nsState"]
             vnf_membex_index = vnfr["member-vnf-index-ref"]
             logger.info(
-                f"Read VNFR: id: {vnf_id}, ns_id: {ns_id}, "
+                f"Read VNFR: id: {vnf_id}, ns_id: {ns_id}, ns_name: {ns_name} "
                 f"state: {ns_state}, vnfd_id: {vnfd_id}, "
                 f"vnf_membex_index: {vnf_membex_index}, "
                 f"project_id: {project_id}"
@@ -137,7 +140,7 @@ def ns_topology():
                     f"vim_id: {vim_id}, vm_id: {vm_id}"
                 )
                 logger.info(
-                    f"METRIC SAMPLE: ns_id: {ns_id}, "
+                    f"METRIC SAMPLE: ns_id: {ns_id}, ns_name: {ns_name}"
                     f"project_id: {project_id}, vnf_id: {vnf_id}, "
                     f"vdu_id: {vdu_id}, vm_id: {vm_id}, vim_id: {vim_id}"
                 )
@@ -150,6 +153,7 @@ def ns_topology():
                     vim_id,
                     vdu_name,
                     vnf_membex_index,
+                    ns_name,
                 ).set(1)
 
         push_to_gateway(
