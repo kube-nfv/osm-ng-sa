@@ -14,16 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #######################################################################################
-aiohttp==3.8.5
+a2wsgi==1.10.7
+    # via connexion
+aiohappyeyeballs==2.3.4
+    # via aiohttp
+aiohttp==3.10.1
     # via apache-airflow-providers-http
-aiokafka==0.8.1
+aiokafka==0.11.0
     # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
 aiosignal==1.3.1
     # via aiohttp
-alembic==1.12.0
+alembic==1.13.2
     # via apache-airflow
-anyio==4.0.0
-    # via httpcore
+anyio==4.4.0
+    # via
+    #   httpx
+    #   starlette
 apache-airflow==2.5.3
     # via
     #   -r requirements-dev.in
@@ -32,98 +38,96 @@ apache-airflow==2.5.3
     #   apache-airflow-providers-http
     #   apache-airflow-providers-imap
     #   apache-airflow-providers-sqlite
-apache-airflow-providers-common-sql==1.7.2
+apache-airflow-providers-common-sql==1.8.1
     # via
     #   apache-airflow
     #   apache-airflow-providers-sqlite
-apache-airflow-providers-ftp==3.5.2
+apache-airflow-providers-ftp==3.6.1
     # via apache-airflow
-apache-airflow-providers-http==4.5.2
+apache-airflow-providers-http==4.7.0
     # via apache-airflow
-apache-airflow-providers-imap==3.3.2
+apache-airflow-providers-imap==3.4.0
     # via apache-airflow
-apache-airflow-providers-sqlite==3.4.3
+apache-airflow-providers-sqlite==3.5.0
     # via apache-airflow
 apispec[yaml]==3.3.2
     # via flask-appbuilder
-argcomplete==3.1.2
+argcomplete==3.5.0
     # via apache-airflow
-asgiref==3.7.2
-    # via apache-airflow-providers-http
+asgiref==3.8.1
+    # via
+    #   apache-airflow-providers-http
+    #   connexion
+    #   flask
 async-timeout==4.0.3
     # via
     #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
     #   aiohttp
     #   aiokafka
-attrs==23.1.0
+attrs==24.2.0
     # via
     #   aiohttp
     #   apache-airflow
     #   cattrs
     #   jsonschema
     #   referencing
-babel==2.13.0
+babel==2.15.0
     # via flask-babel
-blinker==1.6.2
+blinker==1.8.2
     # via apache-airflow
 cachelib==0.9.0
     # via
     #   flask-caching
     #   flask-session
-cattrs==23.1.2
+cattrs==23.2.3
     # via apache-airflow
-certifi==2023.7.22
+certifi==2024.7.4
     # via
     #   httpcore
     #   httpx
     #   requests
-cffi==1.16.0
+cffi==1.17.0
     # via cryptography
-charset-normalizer==3.3.0
-    # via
-    #   aiohttp
-    #   requests
+charset-normalizer==3.3.2
+    # via requests
 click==8.1.7
     # via
-    #   clickclick
     #   flask
     #   flask-appbuilder
-clickclick==20.10.2
-    # via connexion
 colorama==0.4.6
     # via flask-appbuilder
 colorlog==4.8.0
     # via apache-airflow
-configupdater==3.1.1
+configupdater==3.2
     # via apache-airflow
-connexion[flask]==2.14.2
+connexion[flask]==3.1.0
     # via apache-airflow
-cron-descriptor==1.4.0
+cron-descriptor==1.4.3
     # via apache-airflow
-croniter==1.4.1
+croniter==3.0.3
     # via apache-airflow
-cryptography==41.0.4
+cryptography==43.0.0
     # via apache-airflow
 dataclasses==0.6
     # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
 deprecated==1.2.14
     # via apache-airflow
-dill==0.3.7
+dill==0.3.8
     # via apache-airflow
-dnspython==2.4.2
+dnspython==2.6.1
     # via
     #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
     #   email-validator
     #   pymongo
-docutils==0.20.1
+docutils==0.21.2
     # via python-daemon
 email-validator==1.3.1
     # via flask-appbuilder
-exceptiongroup==1.1.3
+exceptiongroup==1.2.2
     # via
     #   anyio
     #   cattrs
-flask==2.2.5
+flask[async]==2.2.5
     # via
     #   apache-airflow
     #   connexion
@@ -139,15 +143,15 @@ flask-appbuilder==4.1.4
     # via apache-airflow
 flask-babel==2.0.0
     # via flask-appbuilder
-flask-caching==2.0.2
+flask-caching==2.3.0
     # via apache-airflow
-flask-jwt-extended==4.5.3
+flask-jwt-extended==4.6.0
     # via flask-appbuilder
-flask-login==0.6.2
+flask-login==0.6.3
     # via
     #   apache-airflow
     #   flask-appbuilder
-flask-session==0.5.0
+flask-session==0.8.0
     # via apache-airflow
 flask-sqlalchemy==2.5.1
     # via flask-appbuilder
@@ -155,23 +159,25 @@ flask-wtf==1.2.1
     # via
     #   apache-airflow
     #   flask-appbuilder
-frozenlist==1.4.0
+frozenlist==1.4.1
     # via
     #   aiohttp
     #   aiosignal
-graphviz==0.20.1
+graphviz==0.20.3
     # via apache-airflow
-greenlet==3.0.0
+greenlet==3.0.3
     # via sqlalchemy
-gunicorn==21.2.0
+gunicorn==22.0.0
     # via apache-airflow
 h11==0.14.0
     # via httpcore
-httpcore==0.18.0
+httpcore==1.0.5
     # via httpx
-httpx==0.25.0
-    # via apache-airflow
-idna==3.4
+httpx==0.27.0
+    # via
+    #   apache-airflow
+    #   connexion
+idna==3.7
     # via
     #   anyio
     #   email-validator
@@ -180,54 +186,50 @@ idna==3.4
     #   yarl
 inflection==0.5.1
     # via connexion
-itsdangerous==2.1.2
+itsdangerous==2.2.0
+    # via
+    #   apache-airflow
+    #   flask
+    #   flask-wtf
+jinja2==3.1.4
     # via
     #   apache-airflow
     #   connexion
     #   flask
-    #   flask-wtf
-jinja2==3.1.2
-    # via
-    #   apache-airflow
-    #   flask
     #   flask-babel
     #   python-nvd3
-jsonschema==4.19.1
+jsonschema==4.23.0
     # via
     #   apache-airflow
     #   connexion
     #   flask-appbuilder
-jsonschema-specifications==2023.7.1
+jsonschema-specifications==2023.12.1
     # via jsonschema
-kafka-python==2.0.2
-    # via
-    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
-    #   aiokafka
-lazy-object-proxy==1.9.0
+lazy-object-proxy==1.10.0
     # via apache-airflow
-linkify-it-py==2.0.2
+linkify-it-py==2.0.3
     # via apache-airflow
 lockfile==0.12.2
     # via
     #   apache-airflow
     #   python-daemon
-mako==1.2.4
+mako==1.3.5
     # via alembic
-markdown==3.4.4
+markdown==3.6
     # via apache-airflow
 markdown-it-py==3.0.0
     # via
     #   apache-airflow
     #   mdit-py-plugins
     #   rich
-markupsafe==2.1.3
+markupsafe==2.1.5
     # via
     #   apache-airflow
     #   jinja2
     #   mako
     #   werkzeug
     #   wtforms
-marshmallow==3.20.1
+marshmallow==3.21.3
     # via
     #   flask-appbuilder
     #   marshmallow-enum
@@ -235,86 +237,89 @@ marshmallow==3.20.1
     #   marshmallow-sqlalchemy
 marshmallow-enum==1.5.1
     # via flask-appbuilder
-marshmallow-oneofschema==3.0.1
+marshmallow-oneofschema==3.1.1
     # via apache-airflow
 marshmallow-sqlalchemy==0.26.1
     # via flask-appbuilder
-mdit-py-plugins==0.4.0
+mdit-py-plugins==0.4.1
     # via apache-airflow
 mdurl==0.1.2
     # via markdown-it-py
-motor==3.3.1
+motor==3.5.1
     # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
-multidict==6.0.4
+msgspec==0.18.6
+    # via flask-session
+multidict==6.0.5
     # via
     #   aiohttp
     #   yarl
 osm-common @ git+https://osm.etsi.org/gerrit/osm/common.git@master
     # via -r requirements-dev.in
-packaging==23.1
+packaging==24.1
     # via
     #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
     #   aiokafka
     #   apache-airflow
-    #   connexion
     #   gunicorn
     #   marshmallow
 pathspec==0.9.0
     # via apache-airflow
-pendulum==2.1.2
+pendulum==3.0.0
     # via apache-airflow
-pluggy==1.3.0
+pluggy==1.5.0
     # via apache-airflow
 prison==0.2.1
     # via flask-appbuilder
-psutil==5.9.5
+psutil==6.0.0
     # via apache-airflow
-pycparser==2.21
+pycparser==2.22
     # via cffi
-pycryptodome==3.19.0
+pycryptodome==3.20.0
     # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
-pygments==2.16.1
+pygments==2.18.0
     # via
     #   apache-airflow
     #   rich
-pyjwt==2.8.0
+pyjwt==2.9.0
     # via
     #   apache-airflow
     #   flask-appbuilder
     #   flask-jwt-extended
-pymongo==4.5.0
+pymongo==4.8.0
     # via
     #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
     #   motor
 python-daemon==3.0.1
     # via apache-airflow
-python-dateutil==2.8.2
+python-dateutil==2.9.0.post0
     # via
     #   apache-airflow
     #   croniter
     #   flask-appbuilder
     #   pendulum
-python-nvd3==0.15.0
+    #   time-machine
+python-multipart==0.0.9
+    # via connexion
+python-nvd3==0.16.0
     # via apache-airflow
-python-slugify==8.0.1
+python-slugify==8.0.4
     # via
     #   apache-airflow
     #   python-nvd3
-pytz==2023.3.post1
-    # via flask-babel
-pytzdata==2020.1
-    # via pendulum
-pyyaml==6.0.1
+pytz==2024.1
+    # via
+    #   croniter
+    #   flask-babel
+pyyaml==6.0.2
     # via
     #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
     #   apispec
-    #   clickclick
     #   connexion
-referencing==0.30.2
+referencing==0.35.1
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests==2.31.0
+requests==2.32.3
     # via
     #   apache-airflow-providers-http
     #   connexion
@@ -323,9 +328,9 @@ requests-toolbelt==1.0.0
     # via apache-airflow-providers-http
 rfc3339-validator==0.1.4
     # via apache-airflow
-rich==13.6.0
+rich==13.7.1
     # via apache-airflow
-rpds-py==0.10.3
+rpds-py==0.20.0
     # via
     #   jsonschema
     #   referencing
@@ -336,12 +341,11 @@ six==1.16.0
     #   prison
     #   python-dateutil
     #   rfc3339-validator
-sniffio==1.3.0
+sniffio==1.3.1
     # via
     #   anyio
-    #   httpcore
     #   httpx
-sqlalchemy==1.4.49
+sqlalchemy==1.4.53
     # via
     #   alembic
     #   apache-airflow
@@ -350,46 +354,57 @@ sqlalchemy==1.4.49
     #   marshmallow-sqlalchemy
     #   sqlalchemy-jsonfield
     #   sqlalchemy-utils
-sqlalchemy-jsonfield==1.0.1.post0
+sqlalchemy-jsonfield==1.0.2
     # via apache-airflow
-sqlalchemy-utils==0.41.1
+sqlalchemy-utils==0.41.2
     # via flask-appbuilder
-sqlparse==0.4.4
+sqlparse==0.5.1
     # via apache-airflow-providers-common-sql
+starlette==0.38.2
+    # via connexion
 tabulate==0.9.0
     # via apache-airflow
-tenacity==8.2.3
+tenacity==9.0.0
     # via apache-airflow
-termcolor==2.3.0
+termcolor==2.4.0
     # via apache-airflow
 text-unidecode==1.3
     # via python-slugify
-typing-extensions==4.8.0
+time-machine==2.15.0
+    # via pendulum
+typing-extensions==4.12.2
     # via
+    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    #   a2wsgi
+    #   aiokafka
     #   alembic
+    #   anyio
     #   apache-airflow
     #   asgiref
     #   cattrs
-uc-micro-py==1.0.2
+    #   connexion
+tzdata==2024.1
+    # via pendulum
+uc-micro-py==1.0.3
     # via linkify-it-py
 unicodecsv==0.14.1
     # via apache-airflow
-urllib3==2.0.6
+urllib3==2.2.2
     # via requests
-werkzeug==2.2.3
+werkzeug==3.0.3
     # via
     #   apache-airflow
     #   connexion
     #   flask
     #   flask-jwt-extended
     #   flask-login
-wrapt==1.15.0
+wrapt==1.16.0
     # via deprecated
-wtforms==3.0.1
+wtforms==3.1.2
     # via
     #   flask-appbuilder
     #   flask-wtf
-yarl==1.9.2
+yarl==1.9.4
     # via aiohttp
 
 # The following packages are considered to be unsafe in a requirements file:
