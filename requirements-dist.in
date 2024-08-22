@@ -15,4 +15,4 @@
 
 stdeb
 setuptools-scm
-setuptools<60
+setuptools>=61

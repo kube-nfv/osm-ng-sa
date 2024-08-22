@@ -24,7 +24,7 @@ tomli==2.0.1
     # via setuptools-scm
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==59.8.0
+setuptools==73.0.1
     # via
     #   -r requirements-dist.in
     #   setuptools-scm
