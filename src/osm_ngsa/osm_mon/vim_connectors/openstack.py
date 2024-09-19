@@ -139,16 +139,16 @@ class OpenStackCollector(VIMConnector):
         services = {service.name: service.type for service in service_catalog}
         log.info(f"Openstack services: {services}")
         if "prometheus" in services:
-            log.debug("Using Prometheus backend")
+            log.info("Using Prometheus backend")
             return "prometheus"
         elif "gnocchi" in services:
-            log.debug("Using Gnocchi backend")
+            log.info("Using Gnocchi backend")
             return "gnocchi"
         elif "ceilometer" in services:
-            log.debug("Using Ceilometer backend")
+            log.info("Using Ceilometer backend")
             return "ceilometer"
         else:
-            log.debug("No suitable backend found")
+            log.info("No suitable backend found")
             return None
 
     def _get_backend(self, vim_account: dict, vim_session: object):
@@ -156,7 +156,7 @@ class OpenStackCollector(VIMConnector):
         log.info(f"openstack_metrics_backend: {openstack_metrics_backend}")
 
         # Priority 1. If prometheus-config, use Prometheus backend
-        log.debug(f"vim_account: {vim_account}")
+        log.info(f"vim_account: {vim_account}")
         if vim_account.get("prometheus-config"):
             try:
                 tsbd = PrometheusTSBDBackend(vim_account)
@@ -171,7 +171,7 @@ class OpenStackCollector(VIMConnector):
 
         # Priority 2. If the VIM is VIO and there is VROPS, use VROPS backend
         vim_type = vim_config.get("vim_type", "").lower()
-        log.debug(f"vim_type: {vim_type}")
+        log.info(f"vim_type: {vim_type}")
         if vim_type == "vio" and "vrops_site" in vim_config:
             try:
                 log.info("Using vROPS backend to collect metric")
