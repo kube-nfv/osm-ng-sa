@@ -26,6 +26,7 @@ from gnocchiclient.v1 import client as gnocchi_client
 from keystoneauth1 import session
 from keystoneauth1.exceptions.catalog import EndpointNotFound
 from keystoneauth1.identity import v3
+from keystoneclient.v3 import client as keystone_client
 from novaclient import client as nova_client
 from osm_mon.vim_connectors.base_vim import VIMConnector
 from osm_mon.vim_connectors.vrops_helper import vROPS_Helper
@@ -129,40 +130,77 @@ class OpenStackCollector(VIMConnector):
         except CertificateNotCreated as e:
             log.error(e)
 
+    def _determine_backend(self):
+        keystone = keystone_client.Client(session=self.vim_session)
+        # Obtain the service catalog from OpenStack
+        service_catalog = keystone.services.list()
+        log.debug(f"Openstack service catalog: {service_catalog}")
+        # Convert into a dictionary
+        services = {service.name: service.type for service in service_catalog}
+        log.debug(f"Openstack services: {services}")
+        if "prometheus" in services:
+            log.debug("Using Prometheus backend")
+            return "prometheus"
+        elif "gnocchi" in services:
+            log.debug("Using Gnocchi backend")
+            return "gnocchi"
+        elif "ceilometer" in services:
+            log.debug("Using Ceilometer backend")
+            return "ceilometer"
+        else:
+            log.debug("No suitable backend found")
+            return None
+
     def _get_backend(self, vim_account: dict, vim_session: object):
+        openstack_metrics_backend = self._determine_backend()
+        log.debug(f"openstack_metrics_backend: {openstack_metrics_backend}")
+
+        # Priority 1. If prometheus-config, use Prometheus backend
+        log.debug(f"vim_account: {vim_account}")
         if vim_account.get("prometheus-config"):
-            # try:
-            #     tsbd = PrometheusTSBDBackend(vim_account)
-            #     log.debug("Using prometheustsbd backend to collect metric")
-            #     return tsbd
-            # except Exception as e:
-            #     log.error(f"Can't create prometheus client, {e}")
-            #     return None
-            return None
+            try:
+                tsbd = PrometheusTSBDBackend(vim_account)
+                log.debug("Using prometheustsbd backend to collect metric")
+                return tsbd
+            except Exception as e:
+                log.error(f"Can't create prometheus client, {e}")
+                return None
 
-        if "config" in vim_account and "vim_type" in vim_account["config"]:
-            vim_type = vim_account["config"]["vim_type"].lower()
-            log.debug(f"vim_type: {vim_type}")
-            log.debug(f"vim_account[config]: {vim_account['config']}")
-            if vim_type == "vio" and "vrops_site" in vim_account["config"]:
-                try:
-                    log.debug("Using vROPS backend to collect metric")
-                    vrops = VropsBackend(vim_account)
-                    return vrops
-                except Exception as e:
-                    log.error(f"Can't create vROPS client, {e}")
-            return None
+        # Extract config to avoid repetitive checks
+        vim_config = vim_account.get("config", {})
 
+        # Priority 2. If the VIM is VIO and there is VROPS, use VROPS backend
+        vim_type = vim_config.get("vim_type", "").lower()
+        log.debug(f"vim_type: {vim_type}")
+        if vim_type == "vio" and "vrops_site" in vim_config:
+            try:
+                log.debug("Using vROPS backend to collect metric")
+                vrops = VropsBackend(vim_account)
+                return vrops
+            except Exception as e:
+                log.error(f"Can't create vROPS client, {e}")
+                return None
+
+        # Priority 3: try Gnocchi
         try:
             gnocchi = GnocchiBackend(vim_account, vim_session)
             gnocchi.client.metric.list(limit=1)
             log.debug("Using gnocchi backend to collect metric")
             return gnocchi
-        except (HTTPException, EndpointNotFound):
+        except (gnocchiclient.exceptions.ClientException, EndpointNotFound) as e:
+            log.warning(f"Gnocchi not available: {e}")
+
+        # Priority 4: try Ceilometer
+        try:
             ceilometer = CeilometerBackend(vim_account, vim_session)
             ceilometer.client.capabilities.get()
             log.debug("Using ceilometer backend to collect metric")
             return ceilometer
+        except (HTTPException, EndpointNotFound) as e:
+            log.warning(f"Ceilometer not available: {e}")
+
+        log.error("Failed to find a proper backend")
+        return None
 
     def _build_nova_client(self) -> nova_client.Client:
         return nova_client.Client("2", session=self.vim_session, timeout=10)
