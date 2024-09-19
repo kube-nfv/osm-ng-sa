@@ -19,6 +19,7 @@ from typing import Dict, List
 
 class VIMConnector:
     def __init__(self, vim_account: Dict):
+        self.vim_account = vim_account
         pass
 
     # def collect_servers_status(self) -> List[Metric]:
