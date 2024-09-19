@@ -21,11 +21,11 @@ from typing import Dict, List
 
 from airflow import DAG
 from airflow.decorators import task
-from osm_mon.core.common_db import CommonDbClient
-from osm_mon.core.config import Config
-from osm_mon.vim_connectors.azure import AzureCollector
-from osm_mon.vim_connectors.gcp import GcpCollector
-from osm_mon.vim_connectors.openstack import OpenStackCollector
+from osm_ngsa.osm_mon.core.common_db import CommonDbClient
+from osm_ngsa.osm_mon.core.config import Config
+from osm_ngsa.osm_mon.vim_connectors.azure import AzureCollector
+from osm_ngsa.osm_mon.vim_connectors.gcp import GcpCollector
+from osm_ngsa.osm_mon.vim_connectors.openstack import OpenStackCollector
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 
 

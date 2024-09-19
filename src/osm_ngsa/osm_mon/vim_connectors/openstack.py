@@ -28,8 +28,8 @@ from keystoneauth1.exceptions.catalog import EndpointNotFound
 from keystoneauth1.identity import v3
 from keystoneclient.v3 import client as keystone_client
 from novaclient import client as nova_client
-from osm_mon.vim_connectors.base_vim import VIMConnector
-from osm_mon.vim_connectors.vrops_helper import vROPS_Helper
+from osm_ngsa.osm_mon.vim_connectors.base_vim import VIMConnector
+from osm_ngsa.osm_mon.vim_connectors.vrops_helper import vROPS_Helper
 from prometheus_api_client import PrometheusConnect as prometheus_client
 
 log = logging.getLogger(__name__)
@@ -134,10 +134,10 @@ class OpenStackCollector(VIMConnector):
         keystone = keystone_client.Client(session=self.vim_session)
         # Obtain the service catalog from OpenStack
         service_catalog = keystone.services.list()
-        log.debug(f"Openstack service catalog: {service_catalog}")
+        log.info(f"Openstack service catalog: {service_catalog}")
         # Convert into a dictionary
         services = {service.name: service.type for service in service_catalog}
-        log.debug(f"Openstack services: {services}")
+        log.info(f"Openstack services: {services}")
         if "prometheus" in services:
             log.debug("Using Prometheus backend")
             return "prometheus"
@@ -153,14 +153,14 @@ class OpenStackCollector(VIMConnector):
 
     def _get_backend(self, vim_account: dict, vim_session: object):
         openstack_metrics_backend = self._determine_backend()
-        log.debug(f"openstack_metrics_backend: {openstack_metrics_backend}")
+        log.info(f"openstack_metrics_backend: {openstack_metrics_backend}")
 
         # Priority 1. If prometheus-config, use Prometheus backend
         log.debug(f"vim_account: {vim_account}")
         if vim_account.get("prometheus-config"):
             try:
                 tsbd = PrometheusTSBDBackend(vim_account)
-                log.debug("Using prometheustsbd backend to collect metric")
+                log.info("Using prometheustsbd backend to collect metric")
                 return tsbd
             except Exception as e:
                 log.error(f"Can't create prometheus client, {e}")
@@ -174,7 +174,7 @@ class OpenStackCollector(VIMConnector):
         log.debug(f"vim_type: {vim_type}")
         if vim_type == "vio" and "vrops_site" in vim_config:
             try:
-                log.debug("Using vROPS backend to collect metric")
+                log.info("Using vROPS backend to collect metric")
                 vrops = VropsBackend(vim_account)
                 return vrops
             except Exception as e:
@@ -185,7 +185,7 @@ class OpenStackCollector(VIMConnector):
         try:
             gnocchi = GnocchiBackend(vim_account, vim_session)
             gnocchi.client.metric.list(limit=1)
-            log.debug("Using gnocchi backend to collect metric")
+            log.info("Using gnocchi backend to collect metric")
             return gnocchi
         except (gnocchiclient.exceptions.ClientException, EndpointNotFound) as e:
             log.warning(f"Gnocchi not available: {e}")
@@ -194,7 +194,7 @@ class OpenStackCollector(VIMConnector):
         try:
             ceilometer = CeilometerBackend(vim_account, vim_session)
             ceilometer.client.capabilities.get()
-            log.debug("Using ceilometer backend to collect metric")
+            log.info("Using ceilometer backend to collect metric")
             return ceilometer
         except (HTTPException, EndpointNotFound) as e:
             log.warning(f"Ceilometer not available: {e}")

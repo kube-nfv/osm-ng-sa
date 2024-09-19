@@ -23,7 +23,7 @@ from typing import Dict, List
 from google.cloud import monitoring_v3
 from google.oauth2 import service_account
 import googleapiclient.discovery
-from osm_mon.vim_connectors.base_vim import VIMConnector
+from osm_ngsa.osm_mon.vim_connectors.base_vim import VIMConnector
 
 log = logging.getLogger(__name__)
 

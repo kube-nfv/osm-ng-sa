@@ -18,8 +18,8 @@ from datetime import datetime, timedelta
 import logging
 
 from airflow.decorators import dag, task
-from osm_mon.core.common_db import CommonDbClient
-from osm_mon.core.config import Config
+from osm_ngsa.osm_mon.core.common_db import CommonDbClient
+from osm_ngsa.osm_mon.core.config import Config
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 
 

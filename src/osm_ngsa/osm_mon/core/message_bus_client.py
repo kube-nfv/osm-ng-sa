@@ -17,7 +17,7 @@
 from typing import Callable, List
 
 from osm_common import msgkafka, msglocal
-from osm_mon.core.config import Config
+from osm_ngsa.osm_mon.core.config import Config
 
 
 class MessageBusClient:

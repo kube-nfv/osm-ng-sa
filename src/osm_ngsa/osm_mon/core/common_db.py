@@ -15,7 +15,7 @@
 # limitations under the License.
 #######################################################################################
 from osm_common import dbmemory, dbmongo
-from osm_mon.core.config import Config
+from osm_ngsa.osm_mon.core.config import Config
 
 
 class CommonDbClient:

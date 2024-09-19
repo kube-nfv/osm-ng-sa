@@ -19,9 +19,9 @@ import logging
 
 from airflow import DAG
 from airflow.decorators import task
-from osm_mon.core.common_db import CommonDbClient
-from osm_mon.core.config import Config
-from osm_mon.sdnc_connectors.onos import OnosInfraCollector
+from osm_ngsa.osm_mon.core.common_db import CommonDbClient
+from osm_ngsa.osm_mon.core.config import Config
+from osm_ngsa.osm_mon.sdnc_connectors.onos import OnosInfraCollector
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 
 

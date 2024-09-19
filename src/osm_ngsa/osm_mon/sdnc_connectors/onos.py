@@ -22,7 +22,7 @@
 import logging
 from typing import Dict
 
-from osm_mon.sdnc_connectors.base_sdnc import SDNCConnector
+from osm_ngsa.osm_mon.sdnc_connectors.base_sdnc import SDNCConnector
 import requests
 from requests.auth import HTTPBasicAuth
 

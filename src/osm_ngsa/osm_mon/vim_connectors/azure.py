@@ -22,7 +22,7 @@ from azure.identity import ClientSecretCredential
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.monitor import MonitorManagementClient
 from azure.profiles import ProfileDefinition
-from osm_mon.vim_connectors.base_vim import VIMConnector
+from osm_ngsa.osm_mon.vim_connectors.base_vim import VIMConnector
 
 
 log = logging.getLogger(__name__)

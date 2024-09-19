@@ -22,9 +22,9 @@ import uuid
 
 from airflow.decorators import dag, task
 from airflow.operators.python import get_current_context
-from osm_mon.core.common_db import CommonDbClient
-from osm_mon.core.config import Config
-from osm_mon.core.message_bus_client import MessageBusClient
+from osm_ngsa.osm_mon.core.common_db import CommonDbClient
+from osm_ngsa.osm_mon.core.config import Config
+from osm_ngsa.osm_mon.core.message_bus_client import MessageBusClient
 
 # Logging
 logger = logging.getLogger("airflow.task")
