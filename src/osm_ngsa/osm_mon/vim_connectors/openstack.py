@@ -244,10 +244,6 @@ class OpenStackCollector(VIMConnector):
             log.error("Undefined backend")
             return []
 
-        if type(self.backend) is PrometheusTSBDBackend:
-            log.info("Using Prometheus as backend (NOT SUPPORTED)")
-            return []
-
         if type(self.backend) is VropsBackend:
             log.info("Using vROPS as backend")
             return self.backend.collect_metrics(metric_list)
@@ -256,15 +252,16 @@ class OpenStackCollector(VIMConnector):
         for metric in metric_list:
             server = metric["vm_id"]
             metric_name = metric["metric"]
+            # metric_type is only relevant for Gnocchi and Ceilometer
+            metric_type = self._get_metric_type(metric_name)
             try:
-                openstack_metric_name = METRIC_MAPPINGS[metric_name]
+                backend_metric_name = self.backend.map_metric(metric_name)
             except KeyError:
                 continue
-            metric_type = self._get_metric_type(metric_name)
-            log.info(f"Collecting metric {openstack_metric_name} for {server}")
+            log.info(f"Collecting metric {backend_metric_name} for {server}")
             try:
                 value = self.backend.collect_metric(
-                    metric_type, openstack_metric_name, server
+                    metric_type, backend_metric_name, server
                 )
                 if value is not None:
                     log.info(f"value: {value}")
@@ -285,6 +282,9 @@ class OpenstackBackend:
 
     def collect_metrics(self, metrics_list: List[Dict]):
         pass
+
+    def map_metric(self, metric_name: str):
+        return METRIC_MAPPINGS[metric_name]
 
 
 class PrometheusTSBDBackend(OpenstackBackend):
@@ -307,18 +307,28 @@ class PrometheusTSBDBackend(OpenstackBackend):
     def collect_metric(
         self, metric_type: MetricType, metric_name: str, resource_id: str
     ):
+        log.info(f"Collecting metric {metric_name} from Prometheus for {resource_id}")
         metric = self.query_metric(metric_name, resource_id)
+        # From the timeseries returned by Prometheus, we take the second element in the array
+        # corresponding to the metric value.
+        # 0: timestamp
+        # 1: metric value
         return metric["value"][1] if metric else None
 
     def map_metric(self, metric_name: str):
         return self.map[metric_name]
 
     def query_metric(self, metric_name, resource_id=None):
+        log.info(f"Querying metric {metric_name} for {resource_id}")
         metrics = self.client.get_current_metric_value(metric_name=metric_name)
+        log.debug(f"Global result of querying metric: {metrics}")
         if resource_id:
+            log.info(f"Getting the metric for the resource_id: {resource_id}")
             metric = next(
+                # TODO: The label to identify the metric should be standard or read from VIM config
                 filter(lambda x: resource_id in x["metric"]["resource_id"], metrics)
             )
+            log.debug(f"Resource metric {metric_name} for {resource_id}: {metric}")
             return metric
         return metrics
 
