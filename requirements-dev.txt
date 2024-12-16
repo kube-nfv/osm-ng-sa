@@ -59,12 +59,12 @@ asgiref==3.8.1
     #   apache-airflow-providers-http
     #   connexion
     #   flask
-async-timeout==5.0.1
+async-timeout==4.0.3
     # via
     #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
     #   aiohttp
     #   aiokafka
-attrs==24.2.0
+attrs==24.3.0
     # via
     #   aiohttp
     #   apache-airflow
