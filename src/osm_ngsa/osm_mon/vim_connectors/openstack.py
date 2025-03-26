@@ -291,6 +291,9 @@ class PrometheusTSDBBackend(OpenstackBackend):
     def __init__(self, vim_account: dict):
         self.map = self._build_map(vim_account)
         self.cred = vim_account["prometheus-config"].get("prometheus-cred")
+        self.resource_id_label = vim_account["prometheus-config"].get(
+            "resource-id-label", "resource_id"
+        )
         self.client = self._build_prometheus_client(
             vim_account["prometheus-config"]["prometheus-url"]
         )
@@ -325,8 +328,10 @@ class PrometheusTSDBBackend(OpenstackBackend):
         if resource_id:
             log.info(f"Getting the metric for the resource_id: {resource_id}")
             metric = next(
-                # TODO: The label to identify the metric should be standard or read from VIM config
-                filter(lambda x: resource_id in x["metric"]["resource_id"], metrics)
+                filter(
+                    lambda x: resource_id in x["metric"][self.resource_id_label],
+                    metrics,
+                )
             )
             log.debug(f"Resource metric {metric_name} for {resource_id}: {metric}")
             return metric
