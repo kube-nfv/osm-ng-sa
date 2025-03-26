@@ -65,7 +65,7 @@ METRIC_MAPPINGS = {
     "cpu_utilization": "cpu",
 }
 
-METRIC_MAPPINGS_FOR_PROMETHEUS_TSBD = {
+METRIC_MAPPINGS_FOR_PROMETHEUS_TSDB = {
     "cpu_utilization": "cpu",
     "average_memory_utilization": "memory_usage",
     "disk_read_ops": "disk_device_read_requests",
@@ -159,9 +159,9 @@ class OpenStackCollector(VIMConnector):
         log.info(f"vim_account: {vim_account}")
         if vim_account.get("prometheus-config"):
             try:
-                tsbd = PrometheusTSBDBackend(vim_account)
-                log.info("Using prometheustsbd backend to collect metric")
-                return tsbd
+                tsdb = PrometheusTSDBBackend(vim_account)
+                log.info("Using prometheustsdb backend to collect metric")
+                return tsdb
             except Exception as e:
                 log.error(f"Can't create prometheus client, {e}")
                 return None
@@ -287,7 +287,7 @@ class OpenstackBackend:
         return METRIC_MAPPINGS[metric_name]
 
 
-class PrometheusTSBDBackend(OpenstackBackend):
+class PrometheusTSDBBackend(OpenstackBackend):
     def __init__(self, vim_account: dict):
         self.map = self._build_map(vim_account)
         self.cred = vim_account["prometheus-config"].get("prometheus-cred")
@@ -299,7 +299,7 @@ class PrometheusTSBDBackend(OpenstackBackend):
         return prometheus_client(url, disable_ssl=True)
 
     def _build_map(self, vim_account: dict) -> dict:
-        custom_map = METRIC_MAPPINGS_FOR_PROMETHEUS_TSBD
+        custom_map = METRIC_MAPPINGS_FOR_PROMETHEUS_TSDB
         if "prometheus-map" in vim_account["prometheus-config"]:
             custom_map.update(vim_account["prometheus-config"]["prometheus-map"])
         return custom_map
