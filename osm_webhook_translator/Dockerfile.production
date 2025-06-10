@@ -1,0 +1,79 @@
+# syntax=docker/dockerfile:1
+#######################################################################################
+# Copyright ETSI Contributors and Others.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#######################################################################################
+
+#######################
+# Stage 1: Base Stage #
+#######################
+
+FROM python:3.10-alpine AS base
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+
+#####################################################################################################################################################################
+
+########################
+# Stage 2: Build stage #
+########################
+FROM base AS build
+
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add --no-cache --virtual .build-deps \
+        build-base git curl
+
+WORKDIR /app
+
+# Create the virtual environment
+RUN python -m venv /app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+COPY requirements.txt ./
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+RUN --mount=type=cache,target=/root/.cache/pip \
+ pip install --no-cache-dir .
+
+
+####################################################################################################################################################################
+
+########################
+# Stage 3: Final Stage #
+########################
+FROM base AS final
+
+WORKDIR /app/osm_webhook_translator
+
+RUN  addgroup -g 1000 appuser && \
+ adduser  -u 1000 -G appuser -D appuser && \
+ chown -R appuser:appuser /app
+
+USER appuser
+
+ENV VIRTUAL_ENV=/app/.venv \
+  PATH="/app/.venv/bin:$PATH"
+
+COPY --from=build --chown=appuser:appuser /app/.venv /app/.venv
+
+EXPOSE 9998
+CMD ["uvicorn", "osm_webhook_translator.main:app", "--host", "0.0.0.0", "--port", "9998"]
+
