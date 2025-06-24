@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #######################################################################################
-packaging==24.2
+packaging==25.0
     # via setuptools-scm
-setuptools-scm==8.2.0
+setuptools-scm==8.3.1
     # via -r osm_webhook_translator/requirements-dist.in
 stdeb==0.10.0
     # via -r osm_webhook_translator/requirements-dist.in
@@ -24,7 +24,7 @@ tomli==2.2.1
     # via setuptools-scm
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==76.0.0
+setuptools==80.9.0
     # via
     #   -r osm_webhook_translator/requirements-dist.in
     #   setuptools-scm
