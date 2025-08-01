@@ -18,7 +18,7 @@ annotated-types==0.7.0
     # via pydantic
 anyio==4.9.0
     # via starlette
-certifi==2025.6.15
+certifi==2025.7.14
     # via requests
 charset-normalizer==3.4.2
     # via requests
@@ -26,7 +26,7 @@ click==8.2.1
     # via uvicorn
 exceptiongroup==1.3.0
     # via anyio
-fastapi==0.115.13
+fastapi==0.116.1
     # via -r osm_webhook_translator/requirements.in
 h11==0.16.0
     # via uvicorn
@@ -42,20 +42,21 @@ requests==2.32.4
     # via -r osm_webhook_translator/requirements.in
 sniffio==1.3.1
     # via anyio
-starlette==0.46.2
+starlette==0.47.2
     # via fastapi
-typing-extensions==4.14.0
+typing-extensions==4.14.1
     # via
     #   anyio
     #   exceptiongroup
     #   fastapi
     #   pydantic
     #   pydantic-core
+    #   starlette
     #   typing-inspection
     #   uvicorn
 typing-inspection==0.4.1
     # via pydantic
 urllib3==2.5.0
     # via requests
-uvicorn==0.34.3
+uvicorn==0.35.0
     # via -r osm_webhook_translator/requirements.in
