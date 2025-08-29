@@ -21,7 +21,7 @@ aiohappyeyeballs==2.6.1
 aiohttp==3.12.15
     # via apache-airflow-providers-http
 aiokafka==0.12.0
-    # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v18.0
 aiosignal==1.4.0
     # via aiohttp
 alembic==1.16.4
@@ -61,7 +61,7 @@ asgiref==3.9.1
     #   flask
 async-timeout==4.0.3
     # via
-    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v18.0
     #   aiohttp
     #   aiokafka
 attrs==25.3.0
@@ -109,14 +109,14 @@ croniter==6.0.0
 cryptography==45.0.5
     # via apache-airflow
 dataclasses==0.6
-    # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v18.0
 deprecated==1.2.18
     # via apache-airflow
 dill==0.4.0
     # via apache-airflow
 dnspython==2.7.0
     # via
-    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v18.0
     #   email-validator
     #   pymongo
 email-validator==1.3.1
@@ -244,18 +244,18 @@ mdit-py-plugins==0.4.2
 mdurl==0.1.2
     # via markdown-it-py
 motor==3.7.1
-    # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v18.0
 msgspec==0.19.0
     # via flask-session
 multidict==6.6.3
     # via
     #   aiohttp
     #   yarl
-osm-common @ git+https://osm.etsi.org/gerrit/osm/common.git@master
+osm-common @ git+https://osm.etsi.org/gerrit/osm/common.git@v18.0
     # via -r requirements-dev.in
 packaging==25.0
     # via
-    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v18.0
     #   aiokafka
     #   apache-airflow
     #   gunicorn
@@ -277,7 +277,7 @@ psutil==7.0.0
 pycparser==2.22
     # via cffi
 pycryptodome==3.23.0
-    # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    # via -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v18.0
 pygments==2.19.2
     # via
     #   apache-airflow
@@ -289,7 +289,7 @@ pyjwt==2.10.1
     #   flask-jwt-extended
 pymongo==4.13.2
     # via
-    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v18.0
     #   motor
 python-daemon==3.1.2
     # via apache-airflow
@@ -313,7 +313,7 @@ pytz==2025.2
     #   flask-babel
 pyyaml==6.0.2
     # via
-    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v18.0
     #   apispec
     #   connexion
 referencing==0.36.2
@@ -373,7 +373,7 @@ tomli==2.2.1
     # via alembic
 typing-extensions==4.14.1
     # via
-    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=master
+    #   -r https://osm.etsi.org/gitweb/?p=osm/common.git;a=blob_plain;f=requirements.txt;hb=v18.0
     #   a2wsgi
     #   aiokafka
     #   aiosignal
