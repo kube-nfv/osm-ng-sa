@@ -16,9 +16,9 @@
 #######################################################################################
 packaging==25.0
     # via setuptools-scm
-setuptools-scm==8.3.1
+setuptools-scm==9.2.0
     # via -r requirements-dist.in
-stdeb==0.10.2
+stdeb==0.11.0
     # via -r requirements-dist.in
 tomli==2.2.1
     # via setuptools-scm
