@@ -19,15 +19,15 @@ autopage==0.5.2
 azure-common==1.1.28
     # via
     #   -r requirements.in
-    #   azure-mgmt-compute
     #   azure-mgmt-monitor
-azure-core==1.35.0
+azure-core==1.35.1
     # via
     #   azure-identity
     #   azure-mgmt-core
-azure-identity==1.23.1
+    #   msrest
+azure-identity==1.25.0
     # via -r requirements.in
-azure-mgmt-compute==35.0.0
+azure-mgmt-compute==37.0.0
     # via -r requirements.in
 azure-mgmt-core==1.6.0
     # via
@@ -35,21 +35,23 @@ azure-mgmt-core==1.6.0
     #   azure-mgmt-monitor
 azure-mgmt-monitor==7.0.0
     # via -r requirements.in
-cachetools==5.5.2
+cachetools==6.2.0
     # via google-auth
-certifi==2025.7.14
-    # via requests
-cffi==1.17.1
+certifi==2025.8.3
+    # via
+    #   msrest
+    #   requests
+cffi==2.0.0
     # via cryptography
-charset-normalizer==3.4.2
+charset-normalizer==3.4.3
     # via requests
-cliff==4.10.0
+cliff==4.11.0
     # via gnocchiclient
 cmd2==2.7.0
     # via cliff
 contourpy==1.3.2
     # via matplotlib
-cryptography==45.0.5
+cryptography==46.0.2
     # via
     #   azure-identity
     #   msal
@@ -64,19 +66,19 @@ debtcollector==3.0.0
     #   gnocchiclient
     #   oslo-utils
     #   python-keystoneclient
-fonttools==4.59.0
+fonttools==4.60.1
     # via matplotlib
-futurist==3.1.1
+futurist==3.2.1
     # via gnocchiclient
 gnocchiclient==7.2.0
     # via -r requirements.in
-google-api-core[grpc]==2.25.1
+google-api-core[grpc]==2.25.2
     # via
     #   google-api-python-client
     #   google-cloud-monitoring
-google-api-python-client==2.177.0
+google-api-python-client==2.184.0
     # via -r requirements.in
-google-auth==2.40.3
+google-auth==2.41.1
     # via
     #   -r requirements.in
     #   google-api-core
@@ -91,15 +93,15 @@ googleapis-common-protos==1.70.0
     # via
     #   google-api-core
     #   grpcio-status
-grpcio==1.74.0
+grpcio==1.75.1
     # via
     #   google-api-core
     #   grpcio-status
-grpcio-status==1.74.0
+grpcio-status==1.75.1
     # via google-api-core
 httmock==1.4.0
     # via prometheus-api-client
-httplib2==0.22.0
+httplib2==0.31.0
     # via
     #   google-api-python-client
     #   google-auth-httplib2
@@ -114,23 +116,23 @@ iso8601==2.1.0
     #   python-novaclient
 isodate==0.7.2
     # via
-    #   azure-mgmt-compute
     #   azure-mgmt-monitor
-keystoneauth1==5.11.1
+    #   msrest
+keystoneauth1==5.12.0
     # via
     #   gnocchiclient
     #   python-ceilometerclient
     #   python-keystoneclient
     #   python-novaclient
-kiwisolver==1.4.8
+kiwisolver==1.4.9
     # via matplotlib
-markdown-it-py==3.0.0
+markdown-it-py==4.0.0
     # via rich
-matplotlib==3.10.5
+matplotlib==3.10.6
     # via prometheus-api-client
 mdurl==0.1.2
     # via markdown-it-py
-msal==1.33.0
+msal==1.34.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -138,6 +140,8 @@ msal-extensions==1.3.1
     # via azure-identity
 msgpack==1.1.1
     # via oslo-serialization
+msrest==0.7.1
+    # via azure-mgmt-compute
 netaddr==1.3.0
     # via
     #   oslo-config
@@ -148,23 +152,25 @@ numpy==2.2.6
     #   matplotlib
     #   pandas
     #   prometheus-api-client
+oauthlib==3.3.1
+    # via requests-oauthlib
 os-service-types==1.8.0
     # via keystoneauth1
 oslo-config==10.0.0
     # via python-keystoneclient
-oslo-i18n==6.5.1
+oslo-i18n==6.6.0
     # via
     #   oslo-config
     #   oslo-utils
     #   python-ceilometerclient
     #   python-keystoneclient
     #   python-novaclient
-oslo-serialization==5.7.0
+oslo-serialization==5.8.0
     # via
     #   python-ceilometerclient
     #   python-keystoneclient
     #   python-novaclient
-oslo-utils==9.0.0
+oslo-utils==9.1.0
     # via
     #   oslo-serialization
     #   python-ceilometerclient
@@ -175,9 +181,9 @@ packaging==25.0
     #   matplotlib
     #   oslo-utils
     #   python-keystoneclient
-pandas==2.3.1
+pandas==2.3.3
     # via prometheus-api-client
-pbr==6.1.1
+pbr==7.0.1
     # via
     #   keystoneauth1
     #   os-service-types
@@ -186,7 +192,6 @@ pbr==6.1.1
     #   python-ceilometerclient
     #   python-keystoneclient
     #   python-novaclient
-    #   stevedore
 pillow==11.3.0
     # via matplotlib
 prettytable==0.7.2
@@ -196,20 +201,20 @@ prettytable==0.7.2
     #   python-novaclient
 prometheus-api-client==0.6.0
     # via -r requirements.in
-prometheus-client==0.22.1
+prometheus-client==0.23.1
     # via -r requirements.in
 proto-plus==1.26.1
     # via
     #   google-api-core
     #   google-cloud-monitoring
-protobuf==6.31.1
+protobuf==6.32.1
     # via
     #   google-api-core
     #   google-cloud-monitoring
     #   googleapis-common-protos
     #   grpcio-status
     #   proto-plus
-psutil==7.0.0
+psutil==7.1.0
     # via oslo-utils
 pyasn1==0.6.1
     # via
@@ -217,18 +222,20 @@ pyasn1==0.6.1
     #   rsa
 pyasn1-modules==0.4.2
     # via google-auth
-pycparser==2.22
+pycparser==2.23
     # via cffi
 pygments==2.19.2
     # via rich
 pyjwt[crypto]==2.10.1
-    # via msal
-pyparsing==3.2.3
+    # via
+    #   msal
+    #   pyjwt
+pyparsing==3.2.5
     # via
     #   httplib2
     #   matplotlib
     #   oslo-utils
-pyperclip==1.9.0
+pyperclip==1.11.0
     # via cmd2
 python-ceilometerclient==2.9.0
     # via -r requirements.in
@@ -238,33 +245,37 @@ python-dateutil==2.9.0.post0
     #   gnocchiclient
     #   matplotlib
     #   pandas
-python-keystoneclient==5.6.0
+python-keystoneclient==5.7.0
     # via -r requirements.in
-python-novaclient==18.10.0
+python-novaclient==18.11.0
     # via -r requirements.in
 pytz==2025.2
     # via
     #   dateparser
     #   pandas
-pyyaml==6.0.2
+pyyaml==6.0.3
     # via
     #   -r requirements.in
     #   cliff
     #   oslo-config
     #   oslo-utils
-regex==2025.7.34
+regex==2025.9.18
     # via dateparser
-requests==2.32.4
+requests==2.32.5
     # via
     #   azure-core
     #   google-api-core
     #   httmock
     #   keystoneauth1
     #   msal
+    #   msrest
     #   oslo-config
     #   prometheus-api-client
     #   python-ceilometerclient
     #   python-keystoneclient
+    #   requests-oauthlib
+requests-oauthlib==2.0.0
+    # via msrest
 rfc3986==2.0.0
     # via oslo-config
 rich==14.1.0
@@ -278,7 +289,7 @@ six==1.17.0
     #   azure-core
     #   python-ceilometerclient
     #   python-dateutil
-stevedore==5.4.1
+stevedore==5.5.0
     # via
     #   cliff
     #   keystoneauth1
@@ -286,12 +297,14 @@ stevedore==5.4.1
     #   python-ceilometerclient
     #   python-keystoneclient
     #   python-novaclient
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   azure-core
     #   azure-identity
     #   azure-mgmt-compute
     #   azure-mgmt-monitor
+    #   cryptography
+    #   grpcio
     #   keystoneauth1
 tzdata==2025.2
     # via
@@ -300,15 +313,15 @@ tzdata==2025.2
     #   pandas
 tzlocal==5.3.1
     # via dateparser
-ujson==5.10.0
+ujson==5.11.0
     # via gnocchiclient
 uritemplate==4.2.0
     # via google-api-python-client
 urllib3==2.5.0
     # via requests
-wcwidth==0.2.13
+wcwidth==0.2.14
     # via cmd2
-wrapt==1.17.2
+wrapt==1.17.3
     # via debtcollector
 
 # The following packages are considered to be unsafe in a requirements file:

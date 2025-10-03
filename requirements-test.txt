@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #######################################################################################
-coverage==7.10.1
+coverage==7.10.7
     # via -r requirements-test.in
 mock==5.2.0
     # via -r requirements-test.in
