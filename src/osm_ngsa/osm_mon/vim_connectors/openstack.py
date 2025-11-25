@@ -113,7 +113,7 @@ class OpenStackCollector(VIMConnector):
                     verify_ssl = vim_config["ca_cert"]
                 elif "ca_cert_content" in vim_config:
                     # vim_config = self._create_file_cert(vim_config, creds["_id"])
-                    verify_ssl = vim_config["ca_cert"]
+                    verify_ssl = vim_config["ca_cert_content"]
                 if "project_domain_name" in vim_config:
                     project_domain_name = vim_config["project_domain_name"]
                 if "user_domain_name" in vim_config:
