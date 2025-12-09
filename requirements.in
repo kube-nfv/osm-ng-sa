@@ -23,7 +23,7 @@ gnocchiclient
 google-api-python-client
 google-auth
 google-cloud-monitoring
-prometheus-api-client
+prometheus-api-client==0.6.0
 prometheus-client
 python-ceilometerclient
 python-keystoneclient

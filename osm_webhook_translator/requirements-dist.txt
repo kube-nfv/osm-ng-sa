@@ -16,11 +16,11 @@
 #######################################################################################
 packaging==25.0
     # via setuptools-scm
-setuptools-scm==9.2.0
+setuptools-scm==9.2.2
     # via -r osm_webhook_translator/requirements-dist.in
 stdeb==0.11.0
     # via -r osm_webhook_translator/requirements-dist.in
-tomli==2.2.1
+tomli==2.3.0
     # via setuptools-scm
 
 # The following packages are considered to be unsafe in a requirements file:
