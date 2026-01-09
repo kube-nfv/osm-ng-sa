@@ -13,29 +13,255 @@
   limitations under the License.
 */
 
-pipeline {
-    agent none
-    parameters {
-        string(defaultValue: env.GERRIT_BRANCH, description: '', name: 'GERRIT_BRANCH')
-        string(defaultValue: 'osm/NG-SA', description: '', name: 'GERRIT_PROJECT')
-        string(defaultValue: env.GERRIT_REFSPEC, description: '', name: 'GERRIT_REFSPEC')
-        string(defaultValue: env.GERRIT_PATCHSET_REVISION, description: '', name: 'GERRIT_PATCHSET_REVISION')
-        string(defaultValue: 'https://osm.etsi.org/gerrit', description: '', name: 'PROJECT_URL_PREFIX')
-        booleanParam(defaultValue: false, description: '', name: 'TEST_INSTALL')
-        // string(defaultValue: 'artifactory-osm', description: '', name: 'ARTIFACTORY_SERVER')
-        // New parameters for Docker image build
-        string(defaultValue: 'opensourcemano/airflow', description: 'Docker Image Name', name: 'IMAGENAME')
-        string(defaultValue: 'localhost:5000', description: 'Docker Registry', name: 'DOCKER_REGISTRY')
-        string(defaultValue: 'http://', description: 'Docker Registry protocol', name: 'DOCKER_REGISTRY_PROTOCOL')
-        string(defaultValue: '', description: 'ID of Docker Registry Credentials', name: 'DOCKER_CREDENTIALS') // `defaultValue` to be updated with actual ID in Jenkins whenever needed
-    }
-    stages {
-        stage('TEST') {
-            agent { label 'system' }
-            steps {
-                echo "HELLO"
-            }
-        }
-    }
-}
+def DEFAULT_MODULE_NAME = 'ng-sa'
 
+pipeline {
+  agent { label 'pool' }
+  options { disableConcurrentBuilds() }
+  parameters {
+    // Core Gerrit / multibranch inputs
+    string(name: 'GERRIT_BRANCH', defaultValue: env.BRANCH_NAME ?: 'master', description: '')
+    string(name: 'GERRIT_PROJECT', defaultValue: 'osm/NG-SA', description: '')
+    string(name: 'GERRIT_REFSPEC', defaultValue: env.GERRIT_REFSPEC ?: '', description: '')
+    string(name: 'GERRIT_PATCHSET_REVISION', defaultValue: env.GERRIT_PATCHSET_REVISION ?: '', description: '')
+    string(name: 'PROJECT_URL_PREFIX', defaultValue: 'https://osm.etsi.org/gerrit', description: '')
+    string(name: 'ARTIFACTORY_SERVER', defaultValue: 'artifactory-osm', description: '')
+    string(name: 'DOCKER_ARGS', defaultValue: '', description: 'Extra docker args for docker run')
+
+    // Stage 3 parameters (mirroring central ci_stage_3.groovy)
+    // Core installer/E2E toggles
+    string(name: 'DOCKER_TAG', defaultValue: 'testing-daily', description: 'Tests image tag for opensourcemano/tests')
+    string(name: 'INSTALLER', defaultValue: 'Default', description: '')
+    string(name: 'OPENSTACK_BASE_IMAGE', defaultValue: 'ubuntu22.04', description: '')
+    string(name: 'OPENSTACK_OSM_FLAVOR', defaultValue: 'osm.sanity', description: '')
+
+    booleanParam(name: 'DO_BUILD', defaultValue: true, description: '')
+    booleanParam(name: 'DO_INSTALL', defaultValue: true, description: '')
+    booleanParam(name: 'DO_DOCKERPUSH', defaultValue: true, description: '')
+    booleanParam(name: 'DO_ROBOT', defaultValue: true, description: '')
+    string(name: 'ROBOT_TAG_NAME', defaultValue: 'sanity', description: 'Robot tag (sanity/regression/daily)')
+    string(name: 'ROBOT_PASS_THRESHOLD', defaultValue: '100.0', description: 'Pass threshold (%)')
+    string(name: 'ROBOT_UNSTABLE_THRESHOLD', defaultValue: '80.0', description: 'Unstable threshold (%)')
+    string(name: 'MODULE_NAME', defaultValue: 'NG-SA', description: 'Name of the module under test')
+
+    // Paths and configs
+    string(name: 'KUBECONFIG', defaultValue: '/home/jenkins/hive/kubeconfig.yaml', description: '')
+    string(name: 'CLOUDS', defaultValue: '/home/jenkins/hive/clouds.yaml', description: '')
+    string(name: 'ROBOT_VIM', defaultValue: '/home/jenkins/hive/robot-systest.cfg', description: '')
+    string(name: 'ROBOT_PORT_MAPPING_VIM', defaultValue: '/home/jenkins/hive/port-mapping-etsi-vim.yaml', description: '')
+    string(name: 'PROMETHEUS_CONFIG_VIM', defaultValue: '/home/jenkins/hive/etsi-vim-prometheus.json', description: '')
+    string(name: 'HIVE_VIM_1', defaultValue: '/home/jenkins/hive/openstack-etsi.rc', description: '')
+
+    // Feature flags and saves
+    booleanParam(name: 'TRY_JUJU_INSTALLATION', defaultValue: true, description: '')
+    booleanParam(name: 'TRY_OLD_SERVICE_ASSURANCE', defaultValue: false, description: '')
+    booleanParam(name: 'SAVE_CONTAINER_ON_FAIL', defaultValue: false, description: '')
+    booleanParam(name: 'SAVE_CONTAINER_ON_PASS', defaultValue: false, description: '')
+    booleanParam(name: 'SAVE_ARTIFACTS_ON_SMOKE_SUCCESS', defaultValue: true, description: '')
+    booleanParam(name: 'SAVE_ARTIFACTS_OVERRIDE', defaultValue: false, description: '')
+
+    // Optional publishing/flow controls
+    string(name: 'GPG_KEY_NAME', defaultValue: 'OSMETSI', description: '')
+    string(name: 'RELEASE', defaultValue: 'release', description: '')
+    string(name: 'REPO_DISTRO', defaultValue: 'unstable', description: '')
+    string(name: 'REPO_KEY_NAME', defaultValue: 'pubkey.asc', description: '')
+    string(name: 'COMMIT_ID', defaultValue: '', description: '')
+    string(name: 'UPSTREAM_JOB_NAME', defaultValue: '', description: '')
+    string(name: 'UPSTREAM_JOB_NUMBER', defaultValue: '', description: '')
+    string(name: 'UPSTREAM_SUFFIX', defaultValue: '-stage_2', description: '')
+    string(name: 'DOWNSTREAM_STAGE_NAME', defaultValue: 'osm-stage_4', description: '')
+    // Downstream params from NG-SA/Jenkinsfile NEW PIPELINE
+    booleanParam(name: 'TEST_INSTALL', defaultValue: false, description: 'Enable Stage 3/E2E in future')
+    string(name: 'IMAGENAME', defaultValue: 'opensourcemano/ng-sa', description: 'Image name for publish (reserved)')
+  }
+  environment {
+    MDG = "${params.GERRIT_PROJECT?.contains('/') ? params.GERRIT_PROJECT.split('/')[1] : params.GERRIT_PROJECT}"
+    CONTAINER_NAME = "${params.GERRIT_PROJECT}-${params.GERRIT_BRANCH}".toLowerCase()
+    TEST_IMAGE = 'overdrive3000/tox-osm:v1.6'
+    DOCKER_REGISTRY = 'osm.etsi.org:5050/devops/cicd/'
+  }
+  stages {
+    stage('Prepare') { steps { sh 'env' } }
+
+    stage('Checkout') {
+      steps {
+        checkout scm
+        script {
+          sh "git fetch --tags"
+          if (params.GERRIT_REFSPEC?.trim()) { sh "git fetch origin ${params.GERRIT_REFSPEC}" }
+          if (params.GERRIT_PATCHSET_REVISION?.trim()) { sh "git checkout -f ${params.GERRIT_PATCHSET_REVISION}" }
+          sh "sudo git clean -dfx || git clean -dfx"
+        }
+      }
+    }
+
+    stage('Clone devops (central)') {
+      steps {
+        dir('devops') {
+          sh "git init ."
+          sh "git remote remove origin || true"
+          sh "git remote add origin ${params.PROJECT_URL_PREFIX}/osm/devops"
+          sh "git fetch --depth=1 origin ${params.GERRIT_BRANCH}"
+          sh "git checkout -f FETCH_HEAD"
+        }
+      }
+    }
+
+    stage('License Scan') {
+      steps {
+        script {
+          def isMergeJob = env.JOB_NAME?.contains('merge')
+          if (!isMergeJob) { sh 'devops/tools/license_scan.sh' } else { echo 'skip the scan for merge' }
+        }
+      }
+    }
+
+    stage('Prepare Test Image') {
+      steps {
+        script {
+          // Use shared test image from registry; no local build needed
+          sh "docker pull ${env.TEST_IMAGE} || true"
+        }
+      }
+    }
+
+    stage('Tests') {
+      steps {
+        script {
+          def UID = sh(returnStdout: true, script: 'id -u').trim()
+          def GID = sh(returnStdout: true, script: 'id -g').trim()
+          def common = "-v ${env.WORKSPACE}:/tests -e UID=${UID} -e GID=${GID} " + (params.DOCKER_ARGS ?: '')
+
+          stage('Linting Tests') {
+            sh """
+              docker run --rm ${common} \
+                ${env.TEST_IMAGE} \
+                /tests/devops-stages/stage-lint.sh
+            """
+          }
+
+          stage('Unit Tests') {
+            sh """
+              docker run --rm ${common} \
+                ${env.TEST_IMAGE} \
+                /tests/devops-stages/stage-test.sh
+            """
+            if (fileExists('coverage.xml')) { cobertura coberturaReportFile: 'coverage.xml' }
+            if (fileExists('nosetests.xml')) { junit 'nosetests.xml' }
+          }
+
+          stage('Changelog') {
+            sh 'mkdir -p changelog'
+            sh """
+              docker run --rm ${common} \
+                ${env.TEST_IMAGE} \
+                /bin/sh -lc 'devops/tools/generatechangelog-pipeline.sh > /tests/changelog/changelog-${MDG}.html'
+            """
+          }
+        }
+      }
+    }
+
+    stage('Build & Push Image') {
+      when { expression { return params.DO_DOCKERPUSH } }
+      steps {
+        script {
+          def moduleName = (env.MDG ?: DEFAULT_MODULE_NAME).toLowerCase()
+
+          if (!params.GERRIT_BRANCH) {
+            error 'GERRIT_BRANCH is required to tag the Docker image'
+          }
+          def sanitizedBranchName = params.GERRIT_BRANCH
+            .toLowerCase()
+            .replaceAll('[^a-z0-9._-]', '-')
+          def baseTagPrefix = "osm-${sanitizedBranchName}"
+          def buildNumber = env.BUILD_NUMBER ?: '0'
+          def isMergeJob = env.JOB_NAME?.contains('merge')
+          // Remove promotion logic from this stage
+          def moduleTags = []
+          if (isMergeJob) {
+            moduleTags << "${baseTagPrefix}-merge-${buildNumber}"
+          } else {
+            moduleTags << "${baseTagPrefix}-patchset-${buildNumber}"
+          }
+
+          def imageName = params.IMAGENAME ?: "opensourcemano/${moduleName}"
+          def primaryLocalImage = "${imageName}:${moduleTags[0]}"
+
+          withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab-registry',
+                            usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+            sh """
+              docker build -f airflow/Dockerfile.production -t ${primaryLocalImage} .
+            """
+            sh "docker login ${env.DOCKER_REGISTRY.split('/')[0]} -u ${USERNAME} -p ${PASSWORD}"
+            // Push build-scope tag(s) only. Promotion happens after tests.
+            moduleTags.each { tag ->
+              def localImage = "${imageName}:${tag}"
+              def remoteImage = "${env.DOCKER_REGISTRY}${imageName}:${tag}"
+              sh "docker tag ${localImage} ${remoteImage}"
+              sh "docker push ${remoteImage}"
+            }
+            // Stash the built image id for later promotion without rebuild
+            env.BUILT_IMAGE = primaryLocalImage
+            env.BUILT_TAG = moduleTags[0]
+          }
+        }
+      }
+    }
+
+    stage('E2E Test (robot)') {
+      when { expression { return params.DO_ROBOT && !env.JOB_NAME.contains('merge') } }
+      steps {
+        script {
+          def dowstreamJob = "osm-e2e/${params.GERRIT_BRANCH ?: 'master'}"
+          build job: dowstreamJob,
+            parameters: [
+              string(name: 'GERRIT_BRANCH', value: params.GERRIT_BRANCH ?: 'master'),
+              string(name: 'GERRIT_REFSPEC', value: params.GERRIT_REFSPEC ?: ''),
+              string(name: 'OPENSTACK_BASE_IMAGE', value: params.OPENSTACK_BASE_IMAGE),
+              string(name: 'OPENSTACK_OSM_FLAVOR', value: params.OPENSTACK_OSM_FLAVOR),
+              string(name: 'MODULE_NAME', value: params.MODULE_NAME ?: 'NG-SA'),
+              string(name: 'CONTAINER_NAME', value: env.BUILT_TAG),
+              booleanParam(name: 'DO_ROBOT', value: params.DO_ROBOT),
+              booleanParam(name: 'DO_INSTALL', value: params.DO_INSTALL),
+              booleanParam(name: 'SAVE_CONTAINER_ON_FAIL', value: params.SAVE_CONTAINER_ON_FAIL),
+              booleanParam(name: 'SAVE_CONTAINER_ON_PASS', value: params.SAVE_CONTAINER_ON_PASS)
+            ]
+        }
+      }
+    }
+    stage('Image Promotion') {
+      when { expression { return env.JOB_NAME?.contains('merge') } }
+      steps {
+        script {
+          def moduleName = (env.MDG ?: DEFAULT_MODULE_NAME).toLowerCase()
+          def sanitizedBranchName = params.GERRIT_BRANCH
+            .toLowerCase()
+            .replaceAll('[^a-z0-9._-]', '-')
+          def baseTagPrefix = "osm-${sanitizedBranchName}"
+          def targetTag = "${baseTagPrefix}-merge"
+          def imageName = params.IMAGENAME ?: "opensourcemano/${moduleName}"
+
+          withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab-registry',
+                            usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+            sh "docker login ${env.DOCKER_REGISTRY.split('/')[0]} -u ${USERNAME} -p ${PASSWORD}"
+            def remoteImage = "${env.DOCKER_REGISTRY}${imageName}:${targetTag}"
+            sh "docker tag ${env.BUILT_IMAGE} ${remoteImage}"
+            sh "docker push ${remoteImage}"
+          }
+        }
+      }
+    }
+
+    /*
+    Promotion should be done in a separate downstream job after E2E success to avoid
+    */
+  }
+
+  post {
+    always {
+      // cleanWs()
+      deleteDir()
+    }
+  }
+}
