@@ -32,7 +32,7 @@ pipeline {
     // Core installer/E2E toggles
     string(name: 'DOCKER_TAG', defaultValue: 'testing-daily', description: 'Tests image tag for opensourcemano/tests')
     string(name: 'INSTALLER', defaultValue: 'Default', description: '')
-    string(name: 'OPENSTACK_BASE_IMAGE', defaultValue: 'ubuntu22.04', description: '')
+    string(name: 'OPENSTACK_BASE_IMAGE', defaultValue: 'ubuntu24.04', description: '')
     string(name: 'OPENSTACK_OSM_FLAVOR', defaultValue: 'osm.sanity', description: '')
 
     booleanParam(name: 'DO_BUILD', defaultValue: true, description: '')
