@@ -180,7 +180,7 @@ pipeline {
           // Remove promotion logic from this stage
           def moduleTags = []
           if (isMergeJob) {
-            moduleTags << "${baseTagPrefix}-merge-${buildNumber}"
+            moduleTags << "${baseTagPrefix}-merge"
           } else {
             moduleTags << "${baseTagPrefix}-patchset-${buildNumber}"
           }
