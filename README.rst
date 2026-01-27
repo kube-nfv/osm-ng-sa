@@ -20,5 +20,5 @@
 osm-ngsa
 ===========
 
-osm-ngsa is the new Service Assurance Python library for OSM. It includes the different Airflow DAGs used for specific monitoring and alerting stages, as well as common libraries used by those DAGs to interact with VIM.
+osm-ngsa is the Service Assurance Python library for OSM. It includes the different Airflow DAGs used for specific monitoring and alerting stages, as well as common libraries used by those DAGs to interact with VIM.
 
