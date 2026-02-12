@@ -47,7 +47,7 @@ pipeline {
   environment {
     MDG = "${params.GERRIT_PROJECT?.contains('/') ? params.GERRIT_PROJECT.split('/')[1] : params.GERRIT_PROJECT}"
     CONTAINER_NAME = "${params.GERRIT_PROJECT}-${params.GERRIT_BRANCH}".toLowerCase()
-    TEST_IMAGE = 'overdrive3000/tox-osm:v1.6'
+    TEST_IMAGE = "opensourcemano/tox-osm:19.0"
     DOCKER_REGISTRY = 'osm.etsi.org:5050/devops/cicd/'
   }
   stages {
