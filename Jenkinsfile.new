@@ -25,54 +25,24 @@ pipeline {
     string(name: 'GERRIT_REFSPEC', defaultValue: env.GERRIT_REFSPEC ?: '', description: '')
     string(name: 'GERRIT_PATCHSET_REVISION', defaultValue: env.GERRIT_PATCHSET_REVISION ?: '', description: '')
     string(name: 'PROJECT_URL_PREFIX', defaultValue: 'https://osm.etsi.org/gerrit', description: '')
-    string(name: 'ARTIFACTORY_SERVER', defaultValue: 'artifactory-osm', description: '')
     string(name: 'DOCKER_ARGS', defaultValue: '', description: 'Extra docker args for docker run')
 
-    // Stage 3 parameters (mirroring central ci_stage_3.groovy)
-    // Core installer/E2E toggles
-    string(name: 'DOCKER_TAG', defaultValue: 'testing-daily', description: 'Tests image tag for opensourcemano/tests')
-    string(name: 'INSTALLER', defaultValue: 'Default', description: '')
+    // OpenStack configuration for E2E tests
     string(name: 'OPENSTACK_BASE_IMAGE', defaultValue: 'ubuntu24.04', description: '')
     string(name: 'OPENSTACK_OSM_FLAVOR', defaultValue: 'osm.sanity', description: '')
 
-    booleanParam(name: 'DO_BUILD', defaultValue: true, description: '')
+    // Build and E2E test control flags
     booleanParam(name: 'DO_INSTALL', defaultValue: true, description: '')
     booleanParam(name: 'DO_DOCKERPUSH', defaultValue: true, description: '')
     booleanParam(name: 'DO_ROBOT', defaultValue: true, description: '')
-    string(name: 'ROBOT_TAG_NAME', defaultValue: 'sanity', description: 'Robot tag (sanity/regression/daily)')
-    string(name: 'ROBOT_PASS_THRESHOLD', defaultValue: '100.0', description: 'Pass threshold (%)')
-    string(name: 'ROBOT_UNSTABLE_THRESHOLD', defaultValue: '80.0', description: 'Unstable threshold (%)')
     string(name: 'MODULE_NAME', defaultValue: 'NG-SA', description: 'Name of the module under test')
 
-    // Paths and configs
-    string(name: 'KUBECONFIG', defaultValue: '/home/jenkins/hive/kubeconfig.yaml', description: '')
-    string(name: 'CLOUDS', defaultValue: '/home/jenkins/hive/clouds.yaml', description: '')
-    string(name: 'ROBOT_VIM', defaultValue: '/home/jenkins/hive/robot-systest.cfg', description: '')
-    string(name: 'ROBOT_PORT_MAPPING_VIM', defaultValue: '/home/jenkins/hive/port-mapping-etsi-vim.yaml', description: '')
-    string(name: 'PROMETHEUS_CONFIG_VIM', defaultValue: '/home/jenkins/hive/etsi-vim-prometheus.json', description: '')
-    string(name: 'HIVE_VIM_1', defaultValue: '/home/jenkins/hive/openstack-etsi.rc', description: '')
-
-    // Feature flags and saves
-    booleanParam(name: 'TRY_JUJU_INSTALLATION', defaultValue: true, description: '')
-    booleanParam(name: 'TRY_OLD_SERVICE_ASSURANCE', defaultValue: false, description: '')
+    // E2E test save options
     booleanParam(name: 'SAVE_CONTAINER_ON_FAIL', defaultValue: false, description: '')
     booleanParam(name: 'SAVE_CONTAINER_ON_PASS', defaultValue: false, description: '')
-    booleanParam(name: 'SAVE_ARTIFACTS_ON_SMOKE_SUCCESS', defaultValue: true, description: '')
-    booleanParam(name: 'SAVE_ARTIFACTS_OVERRIDE', defaultValue: false, description: '')
 
-    // Optional publishing/flow controls
-    string(name: 'GPG_KEY_NAME', defaultValue: 'OSMETSI', description: '')
-    string(name: 'RELEASE', defaultValue: 'release', description: '')
-    string(name: 'REPO_DISTRO', defaultValue: 'unstable', description: '')
-    string(name: 'REPO_KEY_NAME', defaultValue: 'pubkey.asc', description: '')
-    string(name: 'COMMIT_ID', defaultValue: '', description: '')
-    string(name: 'UPSTREAM_JOB_NAME', defaultValue: '', description: '')
-    string(name: 'UPSTREAM_JOB_NUMBER', defaultValue: '', description: '')
-    string(name: 'UPSTREAM_SUFFIX', defaultValue: '-stage_2', description: '')
-    string(name: 'DOWNSTREAM_STAGE_NAME', defaultValue: 'osm-stage_4', description: '')
-    // Downstream params from NG-SA/Jenkinsfile NEW PIPELINE
-    booleanParam(name: 'TEST_INSTALL', defaultValue: false, description: 'Enable Stage 3/E2E in future')
-    string(name: 'IMAGENAME', defaultValue: 'opensourcemano/ng-sa', description: 'Image name for publish (reserved)')
+    // Image configuration
+    string(name: 'IMAGENAME', defaultValue: 'opensourcemano/ng-sa', description: 'Image name for publish')
   }
   environment {
     MDG = "${params.GERRIT_PROJECT?.contains('/') ? params.GERRIT_PROJECT.split('/')[1] : params.GERRIT_PROJECT}"
