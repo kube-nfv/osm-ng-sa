@@ -125,7 +125,7 @@ pipeline {
             sh """
               docker run --rm ${common} \
                 ${env.TEST_IMAGE} \
-                /bin/sh -lc 'devops/tools/generatechangelog-pipeline.sh > /tests/changelog/changelog-${MDG}.html'
+                sh -c 'devops/tools/generatechangelog-pipeline.sh > /tests/changelog/changelog-${MDG}.html'
             """
           }
         }
