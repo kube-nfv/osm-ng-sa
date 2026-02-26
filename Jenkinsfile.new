@@ -116,8 +116,16 @@ pipeline {
                 ${env.TEST_IMAGE} \
                 /tests/devops-stages/stage-test.sh
             """
-            if (fileExists('coverage.xml')) { cobertura coberturaReportFile: 'coverage.xml' }
-            if (fileExists('nosetests.xml')) { junit 'nosetests.xml' }
+            if (fileExists('coverage.xml')) {
+              recordCoverage tools: [[
+                parser: 'COBERTURA',
+                pattern: 'coverage.xml'
+              ]], sourceDirectories: []
+            }
+
+            if (fileExists('nosetests.xml')) {
+              junit 'nosetests.xml'
+            }
           }
 
           stage('Changelog') {
