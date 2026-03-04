@@ -19,12 +19,11 @@ pipeline {
   agent { label 'pool' }
   options { disableConcurrentBuilds() }
   parameters {
-    // Core Gerrit / multibranch inputs
-    string(name: 'GERRIT_BRANCH', defaultValue: env.BRANCH_NAME ?: 'master', description: '')
-    string(name: 'GERRIT_PROJECT', defaultValue: 'osm/NG-SA', description: '')
-    string(name: 'GERRIT_REFSPEC', defaultValue: env.GERRIT_REFSPEC ?: '', description: '')
-    string(name: 'GERRIT_PATCHSET_REVISION', defaultValue: env.GERRIT_PATCHSET_REVISION ?: '', description: '')
-    string(name: 'PROJECT_URL_PREFIX', defaultValue: 'https://osm.etsi.org/gerrit', description: '')
+    // Core GitLab / multibranch inputs
+    string(name: 'GITLAB_PROJECT', defaultValue: 'osm/NG-SA', description: '')
+    string(name: 'GITLAB_SOURCE_BRANCH', defaultValue: env.CHANGE_BRANCH ?: env.BRANCH_NAME ?: 'master', description: '')
+    string(name: 'GITLAB_TARGET_BRANCH', defaultValue: env.CHANGE_TARGET ?: 'master', description: '')
+    string(name: 'PROJECT_URL_PREFIX', defaultValue: 'https://osm.etsi.org/gitlab', description: '')
     string(name: 'DOCKER_ARGS', defaultValue: '', description: 'Extra docker args for docker run')
 
     // OpenStack configuration for E2E tests
@@ -45,8 +44,8 @@ pipeline {
     string(name: 'IMAGENAME', defaultValue: 'opensourcemano/ng-sa', description: 'Image name for publish')
   }
   environment {
-    MDG = "${params.GERRIT_PROJECT?.contains('/') ? params.GERRIT_PROJECT.split('/')[1] : params.GERRIT_PROJECT}"
-    CONTAINER_NAME = "${params.GERRIT_PROJECT}-${params.GERRIT_BRANCH}".toLowerCase()
+    MDG = "${params.GITLAB_PROJECT?.contains('/') ? params.GITLAB_PROJECT.split('/')[1] : params.GITLAB_PROJECT}"
+    CONTAINER_NAME = "${params.GITLAB_PROJECT}-${params.GITLAB_SOURCE_BRANCH}".toLowerCase()
     TEST_IMAGE = "opensourcemano/tox-osm:19.0"
     DOCKER_REGISTRY = 'osm.etsi.org:5050/devops/cicd/'
   }
@@ -58,8 +57,6 @@ pipeline {
         checkout scm
         script {
           sh "git fetch --tags"
-          if (params.GERRIT_REFSPEC?.trim()) { sh "git fetch origin ${params.GERRIT_REFSPEC}" }
-          if (params.GERRIT_PATCHSET_REVISION?.trim()) { sh "git checkout -f ${params.GERRIT_PATCHSET_REVISION}" }
           sh "sudo git clean -dfx || git clean -dfx"
         }
       }
@@ -71,7 +68,7 @@ pipeline {
           sh "git init ."
           sh "git remote remove origin || true"
           sh "git remote add origin ${params.PROJECT_URL_PREFIX}/osm/devops"
-          sh "git fetch --depth=1 origin ${params.GERRIT_BRANCH}"
+          sh "git fetch --depth=1 origin ${params.GITLAB_TARGET_BRANCH}"
           sh "git checkout -f FETCH_HEAD"
         }
       }
@@ -80,7 +77,7 @@ pipeline {
     stage('License Scan') {
       steps {
         script {
-          def isMergeJob = env.JOB_NAME?.contains('merge')
+          def isMergeJob = !env.JOB_BASE_NAME.contains('MR')
           if (!isMergeJob) { sh 'devops/tools/license_scan.sh' } else { echo 'skip the scan for merge' }
         }
       }
@@ -146,15 +143,15 @@ pipeline {
         script {
           def moduleName = (env.MDG ?: DEFAULT_MODULE_NAME).toLowerCase()
 
-          if (!params.GERRIT_BRANCH) {
-            error 'GERRIT_BRANCH is required to tag the Docker image'
+          if (!params.GITLAB_SOURCE_BRANCH) {
+            error 'GITLAB_SOURCE_BRANCH is required to tag the Docker image'
           }
-          def sanitizedBranchName = params.GERRIT_BRANCH
+          def sanitizedBranchName = params.GITLAB_SOURCE_BRANCH
             .toLowerCase()
             .replaceAll('[^a-z0-9._-]', '-')
           def baseTagPrefix = "osm-${sanitizedBranchName}"
           def buildNumber = env.BUILD_NUMBER ?: '0'
-          def isMergeJob = env.JOB_NAME?.contains('merge')
+          def isMergeJob = !env.JOB_BASE_NAME.contains('MR')
           // Remove promotion logic from this stage
           def moduleTags = []
           if (isMergeJob) {
@@ -188,14 +185,13 @@ pipeline {
     }
 
     stage('E2E Test (robot)') {
-      when { expression { return params.DO_ROBOT && !env.JOB_NAME.contains('merge') } }
+      when { expression { return params.DO_ROBOT && env.JOB_BASE_NAME.contains('MR') } }
       steps {
         script {
-          def dowstreamJob = "osm-e2e/${params.GERRIT_BRANCH ?: 'master'}"
+          def dowstreamJob = "osm-e2e/${params.GITLAB_TARGET_BRANCH ?: 'master'}"
           build job: dowstreamJob,
             parameters: [
-              string(name: 'GERRIT_BRANCH', value: params.GERRIT_BRANCH ?: 'master'),
-              string(name: 'GERRIT_REFSPEC', value: params.GERRIT_REFSPEC ?: ''),
+              string(name: 'GERRIT_BRANCH', value: params.GITLAB_TARGET_BRANCH),
               string(name: 'OPENSTACK_BASE_IMAGE', value: params.OPENSTACK_BASE_IMAGE),
               string(name: 'OPENSTACK_OSM_FLAVOR', value: params.OPENSTACK_OSM_FLAVOR),
               string(name: 'MODULE_NAME', value: params.MODULE_NAME ?: 'NG-SA'),
@@ -209,11 +205,11 @@ pipeline {
       }
     }
     stage('Image Promotion') {
-      when { expression { return env.JOB_NAME?.contains('merge') } }
+      when { expression { return !env.JOB_BASE_NAME.contains('MR') } }
       steps {
         script {
           def moduleName = (env.MDG ?: DEFAULT_MODULE_NAME).toLowerCase()
-          def sanitizedBranchName = params.GERRIT_BRANCH
+          def sanitizedBranchName = params.GITLAB_SOURCE_BRANCH
             .toLowerCase()
             .replaceAll('[^a-z0-9._-]', '-')
           def baseTagPrefix = "osm-${sanitizedBranchName}"
