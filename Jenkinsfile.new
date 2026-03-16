@@ -41,7 +41,7 @@ pipeline {
     booleanParam(name: 'SAVE_CONTAINER_ON_PASS', defaultValue: false, description: '')
 
     // Image configuration
-    string(name: 'IMAGENAME', defaultValue: 'opensourcemano/ng-sa', description: 'Image name for publish')
+    string(name: 'IMAGENAME', defaultValue: 'opensourcemano/airflow', description: 'Image name for publish')
   }
   environment {
     MDG = "${params.GITLAB_PROJECT?.contains('/') ? params.GITLAB_PROJECT.split('/')[1] : params.GITLAB_PROJECT}"
