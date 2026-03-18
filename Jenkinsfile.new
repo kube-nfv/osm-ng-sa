@@ -26,26 +26,15 @@ pipeline {
     string(name: 'PROJECT_URL_PREFIX', defaultValue: 'https://osm.etsi.org/gitlab', description: '')
     string(name: 'DOCKER_ARGS', defaultValue: '', description: 'Extra docker args for docker run')
 
-    // OpenStack configuration for E2E tests
-    string(name: 'OPENSTACK_BASE_IMAGE', defaultValue: 'ubuntu24.04', description: '')
-    string(name: 'OPENSTACK_OSM_FLAVOR', defaultValue: 'osm.sanity', description: '')
-
-    // Build and E2E test control flags
-    booleanParam(name: 'DO_INSTALL', defaultValue: true, description: '')
-    booleanParam(name: 'DO_DOCKERPUSH', defaultValue: true, description: '')
-    booleanParam(name: 'DO_ROBOT', defaultValue: true, description: '')
+    // E2E Tests Parameters
     string(name: 'MODULE_NAME', defaultValue: 'NG-SA', description: 'Name of the module under test')
+    booleanParam(name: 'DO_ROBOT', defaultValue: true, description: 'If true, trigger downstream robot tests for merge requests')
 
-    // E2E test save options
-    booleanParam(name: 'SAVE_CONTAINER_ON_FAIL', defaultValue: false, description: '')
-    booleanParam(name: 'SAVE_CONTAINER_ON_PASS', defaultValue: false, description: '')
-
-    // Image configuration
+    // Image name for build and push for promotion
     string(name: 'IMAGENAME', defaultValue: 'opensourcemano/airflow', description: 'Image name for publish')
   }
   environment {
     MDG = "${params.GITLAB_PROJECT?.contains('/') ? params.GITLAB_PROJECT.split('/')[1] : params.GITLAB_PROJECT}"
-    CONTAINER_NAME = "${params.GITLAB_PROJECT}-${params.GITLAB_SOURCE_BRANCH}".toLowerCase()
     TEST_IMAGE = "opensourcemano/tox-osm:19.0"
     DOCKER_REGISTRY = 'osm.etsi.org:5050/devops/cicd/'
   }
@@ -138,7 +127,6 @@ pipeline {
     }
 
     stage('Build & Push Image') {
-      when { expression { return params.DO_DOCKERPUSH } }
       steps {
         script {
           def moduleName = (env.MDG ?: DEFAULT_MODULE_NAME).toLowerCase()
@@ -191,15 +179,9 @@ pipeline {
           def dowstreamJob = "osm-e2e/${params.GITLAB_TARGET_BRANCH ?: 'master'}"
           build job: dowstreamJob,
             parameters: [
-              string(name: 'GERRIT_BRANCH', value: params.GITLAB_TARGET_BRANCH),
-              string(name: 'OPENSTACK_BASE_IMAGE', value: params.OPENSTACK_BASE_IMAGE),
-              string(name: 'OPENSTACK_OSM_FLAVOR', value: params.OPENSTACK_OSM_FLAVOR),
+              string(name: 'GITLAB_BRANCH', value: params.GITLAB_TARGET_BRANCH),
               string(name: 'MODULE_NAME', value: params.MODULE_NAME ?: 'NG-SA'),
-              string(name: 'CONTAINER_NAME', value: env.BUILT_TAG),
-              booleanParam(name: 'DO_ROBOT', value: params.DO_ROBOT),
-              booleanParam(name: 'DO_INSTALL', value: params.DO_INSTALL),
-              booleanParam(name: 'SAVE_CONTAINER_ON_FAIL', value: params.SAVE_CONTAINER_ON_FAIL),
-              booleanParam(name: 'SAVE_CONTAINER_ON_PASS', value: params.SAVE_CONTAINER_ON_PASS)
+              string(name: 'BUILT_TAG', value: env.BUILT_TAG),
             ]
         }
       }
