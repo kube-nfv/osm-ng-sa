@@ -39,185 +39,193 @@ pipeline {
     DOCKER_REGISTRY = 'osm.etsi.org:5050/devops/cicd/'
   }
   stages {
-    stage('Prepare') { steps { sh 'env' } }
-
-    stage('Checkout') {
-      steps {
-        checkout scm
-        script {
-          sh "git fetch --tags"
-          sh "sudo git clean -dfx || git clean -dfx"
+    stage('CI') {
+      when {
+        anyOf {
+          changeRequest()
+          branch pattern: 'master|v19\\.0', comparator: 'REGEXP'
         }
       }
-    }
+      stages {
+        stage('Prepare') { steps { sh 'env' } }
 
-    stage('Clone devops (central)') {
-      steps {
-        dir('devops') {
-          sh "git init ."
-          sh "git remote remove origin || true"
-          sh "git remote add origin ${params.PROJECT_URL_PREFIX}/osm/devops"
-          sh "git fetch --depth=1 origin ${params.GITLAB_TARGET_BRANCH}"
-          sh "git checkout -f FETCH_HEAD"
-        }
-      }
-    }
-
-    stage('License Scan') {
-      steps {
-        script {
-          def isMergeJob = !env.JOB_BASE_NAME.contains('MR')
-          if (!isMergeJob) { sh 'devops/tools/license_scan.sh' } else { echo 'skip the scan for merge' }
-        }
-      }
-    }
-
-    stage('Prepare Test Image') {
-      steps {
-        script {
-          // Use shared test image from registry; no local build needed
-          sh "docker pull ${env.TEST_IMAGE} || true"
-        }
-      }
-    }
-
-    stage('Tests') {
-      steps {
-        script {
-          def UID = sh(returnStdout: true, script: 'id -u').trim()
-          def GID = sh(returnStdout: true, script: 'id -g').trim()
-          def common = "-v ${env.WORKSPACE}:/tests -e UID=${UID} -e GID=${GID} " + (params.DOCKER_ARGS ?: '')
-
-          stage('Linting Tests') {
-            sh """
-              docker run --rm ${common} \
-                ${env.TEST_IMAGE} \
-                /tests/devops-stages/stage-lint.sh
-            """
-          }
-
-          stage('Unit Tests') {
-            sh """
-              docker run --rm ${common} \
-                ${env.TEST_IMAGE} \
-                /tests/devops-stages/stage-test.sh
-            """
-            if (fileExists('coverage.xml')) {
-              recordCoverage tools: [[
-                parser: 'COBERTURA',
-                pattern: 'coverage.xml'
-              ]], sourceDirectories: []
-            }
-
-            if (fileExists('nosetests.xml')) {
-              junit 'nosetests.xml'
+        stage('Checkout') {
+          steps {
+            checkout scm
+            script {
+              sh "git fetch --tags"
+              sh "sudo git clean -dfx || git clean -dfx"
             }
           }
-
-          stage('Changelog') {
-            sh 'mkdir -p changelog'
-            sh """
-              docker run --rm ${common} \
-                ${env.TEST_IMAGE} \
-                sh -c 'devops/tools/generatechangelog-pipeline.sh > /tests/changelog/changelog-${MDG}.html'
-            """
-          }
         }
-      }
-    }
 
-    stage('Build & Push Image') {
-      steps {
-        script {
-          def moduleName = (env.MDG ?: DEFAULT_MODULE_NAME).toLowerCase()
-
-          if (!params.GITLAB_SOURCE_BRANCH) {
-            error 'GITLAB_SOURCE_BRANCH is required to tag the Docker image'
-          }
-          def sanitizedBranchName = params.GITLAB_SOURCE_BRANCH
-            .toLowerCase()
-            .replaceAll('[^a-z0-9._-]', '-')
-          def baseTagPrefix = "osm-${sanitizedBranchName}"
-          def buildNumber = env.BUILD_NUMBER ?: '0'
-          def isMergeJob = !env.JOB_BASE_NAME.contains('MR')
-          // Remove promotion logic from this stage
-          def moduleTags = []
-          if (isMergeJob) {
-            moduleTags << "${baseTagPrefix}-merge"
-          } else {
-            moduleTags << "${baseTagPrefix}-patchset-${buildNumber}"
-          }
-
-          def imageName = params.IMAGENAME ?: "opensourcemano/${moduleName}"
-          def primaryLocalImage = "${imageName}:${moduleTags[0]}"
-
-          withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab-registry',
-                            usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-            sh """
-              docker build -f airflow/Dockerfile.production -t ${primaryLocalImage} .
-            """
-            sh "docker login ${env.DOCKER_REGISTRY.split('/')[0]} -u ${USERNAME} -p ${PASSWORD}"
-            // Push build-scope tag(s) only. Promotion happens after tests.
-            moduleTags.each { tag ->
-              def localImage = "${imageName}:${tag}"
-              def remoteImage = "${env.DOCKER_REGISTRY}${imageName}:${tag}"
-              sh "docker tag ${localImage} ${remoteImage}"
-              sh "docker push ${remoteImage}"
+        stage('Clone devops (central)') {
+          steps {
+            dir('devops') {
+              sh "git init ."
+              sh "git remote remove origin || true"
+              sh "git remote add origin ${params.PROJECT_URL_PREFIX}/osm/devops"
+              sh "git fetch --depth=1 origin ${params.GITLAB_TARGET_BRANCH}"
+              sh "git checkout -f FETCH_HEAD"
             }
-            // Stash the built image id for later promotion without rebuild
-            env.BUILT_IMAGE = primaryLocalImage
-            env.BUILT_TAG = moduleTags[0]
           }
         }
-      }
-    }
 
-    stage('E2E Test (robot)') {
-      when { expression { return params.DO_ROBOT && env.JOB_BASE_NAME.contains('MR') } }
-      steps {
-        script {
-          def dowstreamJob = "osm-e2e/${params.GITLAB_TARGET_BRANCH ?: 'master'}"
-          build job: dowstreamJob,
-            parameters: [
-              string(name: 'GITLAB_BRANCH', value: params.GITLAB_TARGET_BRANCH),
-              string(name: 'MODULE_NAME', value: params.MODULE_NAME ?: 'NG-SA'),
-              string(name: 'MODULE_BUILT_TAG', value: env.BUILT_TAG),
-            ]
-        }
-      }
-    }
-    stage('Image Promotion') {
-      when { expression { return !env.JOB_BASE_NAME.contains('MR') } }
-      steps {
-        script {
-          def moduleName = (env.MDG ?: DEFAULT_MODULE_NAME).toLowerCase()
-          def sanitizedBranchName = params.GITLAB_SOURCE_BRANCH
-            .toLowerCase()
-            .replaceAll('[^a-z0-9._-]', '-')
-          def baseTagPrefix = "osm-${sanitizedBranchName}"
-          def targetTag = "${baseTagPrefix}-merge"
-          def imageName = params.IMAGENAME ?: "opensourcemano/${moduleName}"
-
-          withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab-registry',
-                            usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-            sh "docker login ${env.DOCKER_REGISTRY.split('/')[0]} -u ${USERNAME} -p ${PASSWORD}"
-            def remoteImage = "${env.DOCKER_REGISTRY}${imageName}:${targetTag}"
-            sh "docker tag ${env.BUILT_IMAGE} ${remoteImage}"
-            sh "docker push ${remoteImage}"
+        stage('License Scan') {
+          steps {
+            script {
+              sh 'devops/tools/license_scan.sh'
+            }
           }
         }
+
+        stage('Prepare Test Image') {
+          steps {
+            script {
+              // Use shared test image from registry; no local build needed
+              sh "docker pull ${env.TEST_IMAGE} || true"
+            }
+          }
+        }
+
+        stage('Tests') {
+          steps {
+            script {
+              def UID = sh(returnStdout: true, script: 'id -u').trim()
+              def GID = sh(returnStdout: true, script: 'id -g').trim()
+              def common = "-v ${env.WORKSPACE}:/tests -e UID=${UID} -e GID=${GID} " + (params.DOCKER_ARGS ?: '')
+
+              stage('Linting Tests') {
+                sh """
+                  docker run --rm ${common} \
+                    ${env.TEST_IMAGE} \
+                    /tests/devops-stages/stage-lint.sh
+                """
+              }
+
+              stage('Unit Tests') {
+                sh """
+                  docker run --rm ${common} \
+                    ${env.TEST_IMAGE} \
+                    /tests/devops-stages/stage-test.sh
+                """
+                if (fileExists('coverage.xml')) {
+                  recordCoverage tools: [[
+                    parser: 'COBERTURA',
+                    pattern: 'coverage.xml'
+                  ]], sourceDirectories: []
+                }
+
+                if (fileExists('nosetests.xml')) {
+                  junit 'nosetests.xml'
+                }
+              }
+
+              stage('Changelog') {
+                sh 'mkdir -p changelog'
+                sh """
+                  docker run --rm ${common} \
+                    ${env.TEST_IMAGE} \
+                    sh -c 'devops/tools/generatechangelog-pipeline.sh > /tests/changelog/changelog-${MDG}.html'
+                """
+              }
+            }
+          }
+        }
+
+        stage('Build & Push Image') {
+          steps {
+            script {
+              def moduleName = (env.MDG ?: DEFAULT_MODULE_NAME).toLowerCase()
+
+              if (!params.GITLAB_SOURCE_BRANCH) {
+                error 'GITLAB_SOURCE_BRANCH is required to tag the Docker image'
+              }
+              def sanitizedBranchName = params.GITLAB_SOURCE_BRANCH
+                .toLowerCase()
+                .replaceAll('[^a-z0-9._-]', '-')
+              def baseTagPrefix = "osm-${sanitizedBranchName}"
+              def buildNumber = env.BUILD_NUMBER ?: '0'
+              def isMergeJob = !env.JOB_BASE_NAME.contains('MR')
+              // Remove promotion logic from this stage
+              def moduleTags = []
+              if (isMergeJob) {
+                moduleTags << "${baseTagPrefix}-merge"
+              } else {
+                moduleTags << "${baseTagPrefix}-patchset-${buildNumber}"
+              }
+
+              def imageName = params.IMAGENAME ?: "opensourcemano/${moduleName}"
+              def primaryLocalImage = "${imageName}:${moduleTags[0]}"
+
+              withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab-registry',
+                                usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                sh """
+                  docker build -f airflow/Dockerfile.production -t ${primaryLocalImage} .
+                """
+                sh "docker login ${env.DOCKER_REGISTRY.split('/')[0]} -u ${USERNAME} -p ${PASSWORD}"
+                // Push build-scope tag(s) only. Promotion happens after tests.
+                moduleTags.each { tag ->
+                  def localImage = "${imageName}:${tag}"
+                  def remoteImage = "${env.DOCKER_REGISTRY}${imageName}:${tag}"
+                  sh "docker tag ${localImage} ${remoteImage}"
+                  sh "docker push ${remoteImage}"
+                }
+                // Stash the built image id for later promotion without rebuild
+                env.BUILT_IMAGE = primaryLocalImage
+                env.BUILT_TAG = moduleTags[0]
+              }
+            }
+          }
+        }
+
+        stage('E2E Test (robot)') {
+          when { expression { return params.DO_ROBOT && env.JOB_BASE_NAME.contains('MR') } }
+          steps {
+            script {
+              def dowstreamJob = "osm-e2e/${params.GITLAB_TARGET_BRANCH ?: 'master'}"
+              build job: dowstreamJob,
+                parameters: [
+                  string(name: 'GITLAB_BRANCH', value: params.GITLAB_TARGET_BRANCH),
+                  string(name: 'MODULE_NAME', value: params.MODULE_NAME ?: 'NG-SA'),
+                  string(name: 'MODULE_BUILT_TAG', value: env.BUILT_TAG),
+                ]
+            }
+          }
+        }
+        stage('Image Promotion') {
+          when { expression { return !env.JOB_BASE_NAME.contains('MR') } }
+          steps {
+            script {
+              def moduleName = (env.MDG ?: DEFAULT_MODULE_NAME).toLowerCase()
+              def sanitizedBranchName = params.GITLAB_SOURCE_BRANCH
+                .toLowerCase()
+                .replaceAll('[^a-z0-9._-]', '-')
+              def baseTagPrefix = "osm-${sanitizedBranchName}"
+              def targetTag = "${baseTagPrefix}-merge"
+              def imageName = params.IMAGENAME ?: "opensourcemano/${moduleName}"
+
+              withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab-registry',
+                                usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                sh "docker login ${env.DOCKER_REGISTRY.split('/')[0]} -u ${USERNAME} -p ${PASSWORD}"
+                def remoteImage = "${env.DOCKER_REGISTRY}${imageName}:${targetTag}"
+                sh "docker tag ${env.BUILT_IMAGE} ${remoteImage}"
+                sh "docker push ${remoteImage}"
+              }
+            }
+          }
+        }
+
+        /*
+        Promotion should be done in a separate downstream job after E2E success to avoid
+        */
       }
     }
-
-    /*
-    Promotion should be done in a separate downstream job after E2E success to avoid
-    */
   }
 
   post {
     always {
-      // cleanWs()
-      deleteDir()
+      cleanWs()
     }
   }
 }
