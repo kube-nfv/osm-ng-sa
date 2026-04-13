@@ -189,6 +189,7 @@ pipeline {
                   string(name: 'GITLAB_BRANCH', value: params.GITLAB_TARGET_BRANCH),
                   string(name: 'MODULE_NAME', value: params.MODULE_NAME ?: 'NG-SA'),
                   string(name: 'MODULE_BUILT_TAG', value: env.BUILT_TAG),
+                  string(name: 'ROBOT_TAG_NAME', value: 'sanity')
                 ]
             }
           }
