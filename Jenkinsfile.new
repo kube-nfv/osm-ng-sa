@@ -186,6 +186,7 @@ pipeline {
               def dowstreamJob = "osm-e2e/${params.GITLAB_TARGET_BRANCH ?: 'master'}"
               build job: dowstreamJob,
                 parameters: [
+                  string(name: 'DO_IMAGE_PROMOTION_TO_DOCKERHUB', value: 'false'),
                   string(name: 'GITLAB_BRANCH', value: params.GITLAB_TARGET_BRANCH),
                   string(name: 'MODULE_NAME', value: params.MODULE_NAME ?: 'NG-SA'),
                   string(name: 'MODULE_BUILT_TAG', value: env.BUILT_TAG),
@@ -194,6 +195,7 @@ pipeline {
             }
           }
         }
+
         stage('Image Promotion') {
           when { expression { return !env.JOB_BASE_NAME.contains('MR') } }
           steps {
