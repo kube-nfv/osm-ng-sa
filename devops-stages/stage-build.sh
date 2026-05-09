@@ -18,24 +18,6 @@
 
 set -ex
 
-rm -rf dist deb_dist osm*.tar.gz *.egg-info .eggs
+rm -rf dist osm*.tar.gz *.egg-info .eggs
 
-for p in "osm_webhook_translator"; do 
-    rm -rf $p/dist $p/deb_dist $p/osm*.tar.gz $p/*.egg-info $p/.eggs
-done
-
-mkdir -p deb_dist 
-mkdir -p osm_webhook_translator/deb_dist
-
-PACKAGES="
-dist_ng_sa
-dist_webhook_translator"
-
-TOX_ENV_LIST="$(echo $PACKAGES | sed "s/ /,/g")"
-
-tox -e $TOX_ENV_LIST
-
-# Copying packages
-# Webhook Translator
-cp osm_webhook_translator/deb_dist/python3-osm-webhook-translator_*.deb deb_dist/
-
+tox -e dist_ng_sa
