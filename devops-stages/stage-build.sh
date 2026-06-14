@@ -20,4 +20,4 @@ set -ex
 
 rm -rf dist osm*.tar.gz *.egg-info .eggs
 
-tox -e dist_ng_sa
+tox -e dist
