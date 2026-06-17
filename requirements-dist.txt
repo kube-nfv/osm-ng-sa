@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #######################################################################################
-build==1.2.2
+build==1.5.0
     # via -r requirements-dist.in
-packaging==26.0
+packaging==26.2
     # via
     #   build
     #   setuptools-scm
@@ -24,11 +24,13 @@ pyproject-hooks==1.2.0
     # via build
 setuptools-scm==8.3.1
     # via -r requirements-dist.in
-tomli==2.4.0
-    # via setuptools-scm
+tomli==2.4.1
+    # via
+    #   build
+    #   setuptools-scm
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==82.0.0
+setuptools==82.0.1
     # via
     #   -r requirements-dist.in
     #   setuptools-scm
