@@ -21,7 +21,7 @@ from setuptools import find_namespace_packages, setup
 
 _name = "osm_ngsa"
 _description = "OSM Service Assurance Airflow DAGs and libraries"
-with open(os.path.join(".", "README.rst")) as readme_file:
+with open(os.path.join(".", "README.md")) as readme_file:
     README = readme_file.read()
 
 setup(

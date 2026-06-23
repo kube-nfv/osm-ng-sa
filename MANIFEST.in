@@ -16,5 +16,5 @@
 #######################################################################################
 
 include src/osm_ngsa/requirements.txt
-include src/osm_ngsa/README.rst
+include README.md
 
