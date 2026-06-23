@@ -161,7 +161,7 @@ pipeline {
               withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab-registry',
                                 usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                 sh """
-                  docker build -f airflow/Dockerfile.production -t ${primaryLocalImage} .
+                  docker build -f airflow/Dockerfile -t ${primaryLocalImage} .
                 """
                 sh "docker login ${env.DOCKER_REGISTRY.split('/')[0]} -u ${USERNAME} -p ${PASSWORD}"
                 // Push build-scope tag(s) only. Promotion happens after tests.
