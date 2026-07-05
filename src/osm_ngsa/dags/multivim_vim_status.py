@@ -23,11 +23,12 @@ from osm_ngsa.osm_mon.core.common_db import CommonDbClient
 from osm_ngsa.osm_mon.core.config import Config
 from osm_ngsa.osm_mon.vim_connectors.azure import AzureCollector
 from osm_ngsa.osm_mon.vim_connectors.gcp import GcpCollector
+from osm_ngsa.osm_mon.vim_connectors.kubevim import KubevimCollector
 from osm_ngsa.osm_mon.vim_connectors.openstack import OpenStackCollector
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 
 
-SUPPORTED_VIM_TYPES = ["openstack", "vio", "gcp", "azure"]
+SUPPORTED_VIM_TYPES = ["openstack", "vio", "gcp", "azure", "kubevim"]
 PROMETHEUS_PUSHGW = "pushgateway-prometheus-pushgateway:9091"
 PROMETHEUS_JOB_PREFIX = "airflow_osm_vim_status_"
 PROMETHEUS_METRIC = "osm_vim_status"
@@ -91,6 +92,8 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                 return GcpCollector(vim_account)
             if vim_type == "azure":
                 return AzureCollector(vim_account)
+            if vim_type == "kubevim":
+                return KubevimCollector(vim_account)
             logger.info(f"VIM type '{vim_type}' not supported")
             return None
 
