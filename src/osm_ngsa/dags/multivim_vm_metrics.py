@@ -168,7 +168,7 @@ def create_dag(dag_id, dag_number, dag_description, vim_id):
                     if not vm_id:
                         logger.error("Error: vim-id not available in vdur")
                         continue
-                    vdu_name = vdur.get("name", "UNKNOWN")
+                    vdu_name = vdur.get("vdu-name", vdur.get("name", "UNKNOWN"))
                     vdu = next(
                         filter(lambda vdu: vdu["id"] == vdur["vdu-id-ref"], vnfd["vdu"])
                     )
